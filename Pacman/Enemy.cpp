@@ -53,54 +53,8 @@ void Enemy::Update(int elapsedTime, int level, direction pacmanDirection, float 
 	int currentX;
 	int currentY;
 
-	switch (currDirection)
-	{
-	case UP:
-		currentX = CalculateMazeX(position->X, sourceRect->Width, backgroundTileWidth);
-		currentY = CalculateMazeY(position->Y + sourceRect->Height / 4.0f, sourceRect->Height, backgroundTileHeight);
-		//adds offset so that the position is the centre
-
-		if (currentX == newTileX && currentY <= newTileY)
-			reachedNewTile = true;
-		break;
-
-	case DOWN:
-		currentX = CalculateMazeX(position->X, sourceRect->Width, backgroundTileWidth);
-		currentY = CalculateMazeY(position->Y - sourceRect->Height / 4.0f, sourceRect->Height, backgroundTileHeight);
-		//subtracts offset so that the position is the centre
-
-		//if we have moved past the target tile, just consider it reached so that we don't get stuck
-		if (currentX == newTileX && currentY >= newTileY)
-			reachedNewTile = true;
-		break;
-	case LEFT:
-		currentX = CalculateMazeX(position->X + sourceRect->Width / 4.0f, sourceRect->Width, backgroundTileWidth);
-		//adds offset so that the position is the centre
-		currentY = CalculateMazeY(position->Y, sourceRect->Height, backgroundTileHeight);
-
-		//if we have moved past the target tile, just consider it reached so that we don't get stuck
-		if (currentX <= newTileX && currentY == newTileY)
-			reachedNewTile = true;
-		break;
-	case RIGHT:
-		currentX = CalculateMazeX(position->X - sourceRect->Width / 4.0f, sourceRect->Width, backgroundTileWidth);
-		//subtracts offset so that the position is the centre
-		currentY = CalculateMazeY(position->Y, sourceRect->Height, backgroundTileHeight);
-
-		//if we have moved past the target tile, just consider it reached so that we don't get stuck
-		if (currentX >= newTileX && currentY == newTileY)
-			reachedNewTile = true;
-		break;
-	default:
-		currentX = CalculateMazeX(position->X, sourceRect->Width, backgroundTileWidth);
-		currentY = CalculateMazeY(position->Y, sourceRect->Height, backgroundTileHeight);
-		break;
-	}
-
-	if (currentX == newTileX && currentY == newTileY)
-		reachedNewTile = true;
-
-
+	GetCurrentPosition(currentX, currentY);
+	CheckIfAtTargetTile(currentX, currentY);
 	inChaseOrScatterMode = (currMode == CHASE || currMode == SCATTER);
 
 	if (reachedNewTile) {
@@ -119,49 +73,12 @@ void Enemy::Update(int elapsedTime, int level, direction pacmanDirection, float 
 			else if (currMode != EATEN)
 			{
 				turnedAroundWhenFrightened = false;
-				ghostMode oldMode = currMode;
-				currMode = GetMode(totalElapsedTime);
-
-				//if there has been a mode change, turn around
-				if (oldMode != currMode && currDirection != NONE)
-				{
-					currDirection = OppositeDirection(currDirection);
-				}
+				ModeChangeTurnAround();
 			}
 		}
 
-		switch (currMode)
-		{
-		case CHASE:
-			totalElapsedTime += elapsedTime;
-			Chase(currentX, currentY, pacmanX, pacmanY, pacmanDirection, blinky);
-			inChaseOrScatterMode = true;
-			break;
+		RunModeCode(elapsedTime,currentX, currentY, pacmanX, pacmanY, pacmanDirection, blinky, inChaseOrScatterMode);
 
-		case SCATTER:
-			totalElapsedTime += elapsedTime;
-			Scatter(currentX, currentY, pacmanX, pacmanY);
-			inChaseOrScatterMode = true;
-			break;
-
-		case EATEN:
-			totalElapsedTime += elapsedTime;
-			Eaten(currentX, currentY);
-			inChaseOrScatterMode = false;
-			break;
-
-		case FRIGHTENED:
-			//Don't add to totalElapsedTime here as totalElapsedTime is used to tell which ghost mode we should be in, and it isn't supposed to increment in frightened mode
-			Frightened(currentX, currentY);
-			inChaseOrScatterMode = false;
-			break;
-
-		case INHOUSE:
-			totalElapsedTime += elapsedTime;
-			InHouse(currentX, currentY);
-			inChaseOrScatterMode = false;
-			break;
-		}
 		//then calculate the correct direction based on target tile
 		CalculateDirection(currentX, currentY);
 		ableToLeaveHouse = false;
@@ -181,11 +98,13 @@ void Enemy::Update(int elapsedTime, int level, direction pacmanDirection, float 
 	collidedWithPacman = PacmanCollision(position->X, position->Y, pacmanXPos, pacmanYPos);
 }
 
+/// <summary> Called by pacman to show that the ghost has been eaten</summary>
 void Enemy::GhostHasBeenEaten()
 {
 	currMode = EATEN;
 }
 
+/// <summary> Checks if the ghost can move in each of the 4 possible directions and sets the corresponding bool in the array</summary>
 void Enemy::CheckDirection(bool(&ableToMoveInDirections)[4], int currentX, int currentY)
 {
 	//For ableToMoveInDirections, bools represent the following directions:
@@ -214,6 +133,7 @@ void Enemy::CheckDirection(bool(&ableToMoveInDirections)[4], int currentX, int c
 	}
 }
 
+/// <summary> Calculates which direction to move in </summary>
 void Enemy::CalculateDirection(int currentX, int currentY)
 {
 	//up, left, down, right
@@ -276,11 +196,13 @@ void Enemy::CalculateDirection(int currentX, int currentY)
 	currDirection = newDirection;
 }
 
+/// <summary> Calculates the squared distance between two points</summary>
 int Enemy::DistanceSquared(int x1, int x2, int y1, int y2)
 {
 	return ((x1 - x2) * (x1 - x2)) + ((y1 - y2) * (y1 - y2));
 }
 
+/// <summary> Sets the target tile for the ghost. As it is chase, the ghosts go for some tile relative to pacman </summary>
 void Enemy::Chase(int currentX, int currentY, int pacmanX, int pacmanY, direction pacmanDirection, Enemy* blinky)
 {
 	int distSquared;
@@ -388,6 +310,7 @@ void Enemy::Chase(int currentX, int currentY, int pacmanX, int pacmanY, directio
 		targetY = _mazeHeight - 1;
 }
 
+/// <summary> Sets the target tile for the ghost. As it is scatter, the target tile is a specific corner of the maze</summary>
 void Enemy::Scatter(int currentX, int currentY, int pacmanX, int pacmanY)
 {
 	//in scatter, each ghost sets it target tile to a specific corner
@@ -416,11 +339,12 @@ void Enemy::Scatter(int currentX, int currentY, int pacmanX, int pacmanY)
 	};
 }
 
+/// <summary> Sets the target tile for the ghost. As it is eaten, target tile is inside the house</summary>
 void Enemy::Eaten(int currentX, int currentY)
 {
 	//set target tile to inside the house, and set ableToLeaveHouse to true so that the ghost can get into the house
-	targetX = 13;
-	targetY = 14;
+	targetX = _cHouseX;
+	targetY = _cHouseY;
 	ableToLeaveHouse = true;
 
 	if (currentX == targetX && currentY == targetY)
@@ -429,6 +353,7 @@ void Enemy::Eaten(int currentX, int currentY)
 	}
 }
 
+/// <summary> Sets the target tile for the ghost. As it is frightened, the target tile is a random valid adjecent tile</summary>
 void Enemy::Frightened(int currentX, int currentY)
 {
 	//up, left, down, right
@@ -469,11 +394,12 @@ void Enemy::Frightened(int currentX, int currentY)
 
 }
 
+/// <summary> Sets the target tile for the ghost. As it is inhouse, the target tile is outside of the house so the ghost will try and leave</summary>
 void Enemy::InHouse(int currentX, int currentY)
 {
 	//set target tile to outside of the house, so the ghost will try and leave
 	targetX = _cHouseX;
-	targetY = _cHouseY;
+	targetY = _cHouseY - 3;
 
 	if (totalElapsedTime >= TIMETOLEAVEHOUSE * static_cast<int>(ghost)) {
 		ableToLeaveHouse = true;
@@ -483,6 +409,7 @@ void Enemy::InHouse(int currentX, int currentY)
 	}
 }
 
+/// <summary> Moves the ghost</summary>
 void Enemy::Move(int elapsedTime)
 {
 	float moveAmount = 0;
@@ -522,6 +449,7 @@ void Enemy::Move(int elapsedTime)
 	}
 }
 
+/// <summary> Checks if the ghost has gone off the screen and wraps them back around if they have</summary>
 void Enemy::ScreenWrapCheck()
 {
 	if (position->X < Graphics::GetViewportWidth() / 2.0f - ((_mazeWidth + 4) * backgroundTileWidth) / 2.0f)
@@ -537,6 +465,7 @@ void Enemy::ScreenWrapCheck()
 	}
 }
 
+/// <summary> Checks if the ghost has collided with pacman</summary>
 bool Enemy::PacmanCollision(float ghostX, float ghostY, float pacmanX, float pacmanY)
 {
 	float collisionCentreX = ghostX + sourceRect->Width / 2.0f;
@@ -549,6 +478,7 @@ bool Enemy::PacmanCollision(float ghostX, float ghostY, float pacmanX, float pac
 	return ((collisionCentreX - xOffset < pacmanX + sourceRect->Width) && (collisionCentreX + xOffset > pacmanX) && (collisionCentreY - yOffset < pacmanY + sourceRect->Height) && (collisionCentreY + yOffset > pacmanY));
 }
 
+/// <summary> Animates the ghost</summary>
 void Enemy::Animate(int elapsedTime)
 {
 	currentFrameTime += elapsedTime;
@@ -581,6 +511,7 @@ void Enemy::Animate(int elapsedTime)
 
 }
 
+/// <summary> Returns the mode the ghost should be in based on the time</summary>
 Enemy::ghostMode Enemy::GetMode(unsigned int totalElapsedTime)
 {
 	//imitates what mode the ghost should be in based on: https://gameinternals.com/understanding-pac-man-ghost-behavior
@@ -602,4 +533,134 @@ Enemy::ghostMode Enemy::GetMode(unsigned int totalElapsedTime)
 		return SCATTER;
 	else
 		return CHASE;
+}
+
+/// <summary> Returns the position the ghost has in the maze</summary>
+void Enemy::GetCurrentPosition(int& currentX, int& currentY)
+{
+	switch (currDirection)
+	{
+	case UP:
+		currentX = CalculateMazeX(position->X, sourceRect->Width, backgroundTileWidth);
+		currentY = CalculateMazeY(position->Y + sourceRect->Height / 4.0f, sourceRect->Height, backgroundTileHeight);
+		//adds offset so that the position is the centre
+
+		if (currentX == newTileX && currentY <= newTileY)
+			reachedNewTile = true;
+		break;
+
+	case DOWN:
+		currentX = CalculateMazeX(position->X, sourceRect->Width, backgroundTileWidth);
+		currentY = CalculateMazeY(position->Y - sourceRect->Height / 4.0f, sourceRect->Height, backgroundTileHeight);
+		//subtracts offset so that the position is the centre
+
+		//if we have moved past the target tile, just consider it reached so that we don't get stuck
+		if (currentX == newTileX && currentY >= newTileY)
+			reachedNewTile = true;
+		break;
+	case LEFT:
+		currentX = CalculateMazeX(position->X + sourceRect->Width / 4.0f, sourceRect->Width, backgroundTileWidth);
+		//adds offset so that the position is the centre
+		currentY = CalculateMazeY(position->Y, sourceRect->Height, backgroundTileHeight);
+
+		//if we have moved past the target tile, just consider it reached so that we don't get stuck
+		if (currentX <= newTileX && currentY == newTileY)
+			reachedNewTile = true;
+		break;
+	case RIGHT:
+		currentX = CalculateMazeX(position->X - sourceRect->Width / 4.0f, sourceRect->Width, backgroundTileWidth);
+		//subtracts offset so that the position is the centre
+		currentY = CalculateMazeY(position->Y, sourceRect->Height, backgroundTileHeight);
+
+		//if we have moved past the target tile, just consider it reached so that we don't get stuck
+		if (currentX >= newTileX && currentY == newTileY)
+			reachedNewTile = true;
+		break;
+	default:
+		currentX = CalculateMazeX(position->X, sourceRect->Width, backgroundTileWidth);
+		currentY = CalculateMazeY(position->Y, sourceRect->Height, backgroundTileHeight);
+		break;
+	}
+}
+
+/// <summary> Checks if the ghost has reached or gone past the target tile</summary>
+void Enemy::CheckIfAtTargetTile(int currentX, int currentY)
+{
+	//if we have moved past the target tile, just consider it reached so that we don't get stuck
+	switch (currDirection)
+	{
+	case UP:
+		if (currentX == newTileX && currentY <= newTileY)
+			reachedNewTile = true;
+		break;
+
+	case DOWN:
+		//if we have moved past the target tile, just consider it reached so that we don't get stuck
+		if (currentX == newTileX && currentY >= newTileY)
+			reachedNewTile = true;
+		break;
+	case LEFT:
+		//if we have moved past the target tile, just consider it reached so that we don't get stuck
+		if (currentX <= newTileX && currentY == newTileY)
+			reachedNewTile = true;
+		break;
+	case RIGHT:
+		//if we have moved past the target tile, just consider it reached so that we don't get stuck
+		if (currentX >= newTileX && currentY == newTileY)
+			reachedNewTile = true;
+		break;
+	}
+
+	if (currentX == newTileX && currentY == newTileY)
+		reachedNewTile = true;
+}
+
+/// <summary> Checks if there has been a mode change and turns around if there has</summary>
+void Enemy::ModeChangeTurnAround()
+{
+	ghostMode oldMode = currMode;
+	currMode = GetMode(totalElapsedTime);
+
+	//if there has been a mode change, turn around
+	if (oldMode != currMode && currDirection != NONE)
+	{
+		currDirection = OppositeDirection(currDirection);
+	}
+}
+
+/// <summary> Runs the function for the current mode</summary>
+void Enemy::RunModeCode(int elapsedTime, int currentX, int currentY, int pacmanX, int pacmanY, direction pacmanDirection, Enemy* blinky, bool& inChaseOrScatterMode)
+{
+	switch (currMode)
+	{
+	case CHASE:
+		totalElapsedTime += elapsedTime;
+		Chase(currentX, currentY, pacmanX, pacmanY, pacmanDirection, blinky);
+		inChaseOrScatterMode = true;
+		break;
+
+	case SCATTER:
+		totalElapsedTime += elapsedTime;
+		Scatter(currentX, currentY, pacmanX, pacmanY);
+		inChaseOrScatterMode = true;
+		break;
+
+	case EATEN:
+		totalElapsedTime += elapsedTime;
+		Eaten(currentX, currentY);
+		inChaseOrScatterMode = false;
+		break;
+
+	case FRIGHTENED:
+		//Don't add to totalElapsedTime here as totalElapsedTime is used to tell which ghost mode we should be in, and it isn't supposed to increment in frightened mode
+		Frightened(currentX, currentY);
+		inChaseOrScatterMode = false;
+		break;
+
+	case INHOUSE:
+		totalElapsedTime += elapsedTime;
+		InHouse(currentX, currentY);
+		inChaseOrScatterMode = false;
+		break;
+	}
 }

@@ -75,7 +75,7 @@ private:
 	const float _cEatenSpeedMultiplier = 2.0f;
 	const float _cFrightenedSpeedMultiplier = 0.5f;
 	const int _cHouseX = 13;
-	const int _cHouseY = 11;
+	const int _cHouseY = 14;
 
 	void CheckDirection(bool(&ableToMoveInDirections)[4], int currentX, int currentY);
 	void CalculateDirection(int currentX, int currentY);
@@ -90,6 +90,10 @@ private:
 	bool PacmanCollision(float ghostX, float ghostY, float pacmanX, float pacmanY);
 	void Animate(int elapsedTime);
 	ghostMode GetMode(unsigned int totalElapsedTime);
+	void GetCurrentPosition(int& currentX, int& currentY);
+	void CheckIfAtTargetTile(int currentX, int currentY);
+	void ModeChangeTurnAround();
+	void RunModeCode(int elapsedTime, int currentX, int currentY, int pacmanX, int pacmanY, direction pacmanDirection, Enemy* blinky, bool& inChaseOrScatterMode);
 
 public:
 	Enemy(Texture2D* texture, Vector2* position, Rect* sourceRect, mazeUnits (*mazeInput)[_mazeHeight][_mazeWidth], int ghostNumber, float backgroundElementWidth, float backgroundElementHeight);

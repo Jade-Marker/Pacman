@@ -5,10 +5,6 @@
 //todo
 //https://gameinternals.com/understanding-pac-man-ghost-behavior
 
-//Put summaries for all functions in Enemy class
-
-//Split up update in enemy into more functions
-
 //Clean up code based on week 7
 
 //move constants for left and right screen limit to another file so that it isn't repeated in pacman & enemy
@@ -18,6 +14,10 @@
 //Music when starting level
 
 //SFX when eating pellet
+
+//Power pellets need to be animated
+
+//Need to add cherries
 
 //Animation when dying
 
