@@ -1,6 +1,6 @@
 #include "Enemy.h"
 /// <summary> Constructs the Enemy class. </summary>
-Enemy::Enemy(Texture2D* textureInput, Vector2* positionInput, Rect* sourceRectInput, mazeUnits (*mazeInput)[_mazeHeight][_mazeWidth], int ghostNumber, float backgroundElementWidth, float backgroundElementHeight)
+Enemy::Enemy(Texture2D* textureInput, Vector2* positionInput, Rect* sourceRectInput, mazeUnits (*mazeInput)[_mazeHeight][_mazeWidth], int ghostNumber, float backgroundElementWidth, float backgroundElementHeight): _cSpeed(0.075f), _cFrameTime(500), _cTimeToLeaveHouse(700), _cEatenSpeedMultiplier(2.0f), _cFrightenedSpeedMultiplier(0.5f), _cHouseX(13), _cHouseY(14)
 {
 	texture = textureInput;
 	position = positionInput;
@@ -9,13 +9,13 @@ Enemy::Enemy(Texture2D* textureInput, Vector2* positionInput, Rect* sourceRectIn
 
 	ghost = static_cast<ghostType>(ghostNumber);
 
-	backgroundTileHeight = backgroundElementHeight;
-	backgroundTileWidth = backgroundElementWidth;
+	tilesetTileHeight = backgroundElementHeight;
+	tilesetTileWidth = backgroundElementWidth;
 
 	mt19937 initMT(rd());
 	mt = initMT;
 
-	uniform_int_distribution<int> dist(0, FRAMETIME);
+	uniform_int_distribution<int> dist(0, _cFrameTime);
 
 	currentFrameTime = dist(mt);
 	frame = dist(mt) % 2;
@@ -47,8 +47,8 @@ const Rect* Enemy::GetRectPointer()
 
 void Enemy::Update(int elapsedTime, int level, direction pacmanDirection, float pacmanXPos, float pacmanYPos, Enemy* blinky, bool pacmanPoweredUp, bool& collidedWithPacman, bool& inChaseOrScatterMode)
 {
-	int pacmanX = CalculateMazeX(pacmanXPos, sourceRect->Width, backgroundTileWidth);
-	int pacmanY = CalculateMazeY(pacmanYPos, sourceRect->Height, backgroundTileHeight);
+	int pacmanX = CalculateMazeX(pacmanXPos, sourceRect->Width, tilesetTileWidth);
+	int pacmanY = CalculateMazeY(pacmanYPos, sourceRect->Height, tilesetTileHeight);
 
 	int currentX;
 	int currentY;
@@ -211,8 +211,8 @@ void Enemy::Chase(int currentX, int currentY, int pacmanX, int pacmanY, directio
 	int vectorX, vectorY;
 
 	//blinky x&y calculated as the target tile for Inky is set based on blinkys target tile
-	blinkyX = CalculateMazeX(blinky->GetVectorPointer()->X, sourceRect->Width, backgroundTileWidth);
-	blinkyY = CalculateMazeY(blinky->GetVectorPointer()->Y, sourceRect->Width, backgroundTileHeight);
+	blinkyX = CalculateMazeX(blinky->GetVectorPointer()->X, sourceRect->Width, tilesetTileWidth);
+	blinkyY = CalculateMazeY(blinky->GetVectorPointer()->Y, sourceRect->Width, tilesetTileHeight);
 
 	//set target tile based on type of ghost
 	switch (ghost)
@@ -401,7 +401,7 @@ void Enemy::InHouse(int currentX, int currentY)
 	targetX = _cHouseX;
 	targetY = _cHouseY - 3;
 
-	if (totalElapsedTime >= TIMETOLEAVEHOUSE * static_cast<int>(ghost)) {
+	if (totalElapsedTime >= _cTimeToLeaveHouse * static_cast<int>(ghost)) {
 		ableToLeaveHouse = true;
 
 		if (currentX == targetX && currentY == targetY)
@@ -417,15 +417,15 @@ void Enemy::Move(int elapsedTime)
 	switch (currMode)
 	{
 	case EATEN:
-		moveAmount = _cEatenSpeedMultiplier * SPEED * elapsedTime;
+		moveAmount = _cEatenSpeedMultiplier * _cSpeed * elapsedTime;
 		break;
 
 	case FRIGHTENED:
-		moveAmount = _cFrightenedSpeedMultiplier * SPEED * elapsedTime;
+		moveAmount = _cFrightenedSpeedMultiplier * _cSpeed * elapsedTime;
 		break;
 
 	default:
-		moveAmount = SPEED * elapsedTime;
+		moveAmount = _cSpeed * elapsedTime;
 		break;
 	}
 
@@ -452,15 +452,15 @@ void Enemy::Move(int elapsedTime)
 /// <summary> Checks if the ghost has gone off the screen and wraps them back around if they have</summary>
 void Enemy::ScreenWrapCheck()
 {
-	if (position->X < Graphics::GetViewportWidth() / 2.0f - ((_mazeWidth + 4) * backgroundTileWidth) / 2.0f)
+	if (position->X < Graphics::GetViewportWidth() / 2.0f - ((_mazeWidth + 4) * tilesetTileWidth) / 2.0f)
 	{
-		position->X += (_mazeWidth + 1) * backgroundTileWidth;
+		position->X += (_mazeWidth + 1) * tilesetTileWidth;
 		newTileX = _mazeWidth;
 	}
 
-	if (position->X > Graphics::GetViewportWidth() / 2.0f + ((_mazeWidth + 1) * backgroundTileWidth) / 2.0f)
+	if (position->X > Graphics::GetViewportWidth() / 2.0f + ((_mazeWidth + 1) * tilesetTileWidth) / 2.0f)
 	{
-		position->X -= (_mazeWidth + 2) * backgroundTileWidth;
+		position->X -= (_mazeWidth + 2) * tilesetTileWidth;
 		newTileX = 0;
 	}
 }
@@ -482,7 +482,7 @@ bool Enemy::PacmanCollision(float ghostX, float ghostY, float pacmanX, float pac
 void Enemy::Animate(int elapsedTime)
 {
 	currentFrameTime += elapsedTime;
-	if (currentFrameTime > FRAMETIME)
+	if (currentFrameTime > _cFrameTime)
 	{
 		frame++;
 		if (frame >= 2)
@@ -541,8 +541,8 @@ void Enemy::GetCurrentPosition(int& currentX, int& currentY)
 	switch (currDirection)
 	{
 	case UP:
-		currentX = CalculateMazeX(position->X, sourceRect->Width, backgroundTileWidth);
-		currentY = CalculateMazeY(position->Y + sourceRect->Height / 4.0f, sourceRect->Height, backgroundTileHeight);
+		currentX = CalculateMazeX(position->X, sourceRect->Width, tilesetTileWidth);
+		currentY = CalculateMazeY(position->Y + sourceRect->Height / 4.0f, sourceRect->Height, tilesetTileHeight);
 		//adds offset so that the position is the centre
 
 		if (currentX == newTileX && currentY <= newTileY)
@@ -550,8 +550,8 @@ void Enemy::GetCurrentPosition(int& currentX, int& currentY)
 		break;
 
 	case DOWN:
-		currentX = CalculateMazeX(position->X, sourceRect->Width, backgroundTileWidth);
-		currentY = CalculateMazeY(position->Y - sourceRect->Height / 4.0f, sourceRect->Height, backgroundTileHeight);
+		currentX = CalculateMazeX(position->X, sourceRect->Width, tilesetTileWidth);
+		currentY = CalculateMazeY(position->Y - sourceRect->Height / 4.0f, sourceRect->Height, tilesetTileHeight);
 		//subtracts offset so that the position is the centre
 
 		//if we have moved past the target tile, just consider it reached so that we don't get stuck
@@ -559,26 +559,26 @@ void Enemy::GetCurrentPosition(int& currentX, int& currentY)
 			reachedNewTile = true;
 		break;
 	case LEFT:
-		currentX = CalculateMazeX(position->X + sourceRect->Width / 4.0f, sourceRect->Width, backgroundTileWidth);
+		currentX = CalculateMazeX(position->X + sourceRect->Width / 4.0f, sourceRect->Width, tilesetTileWidth);
 		//adds offset so that the position is the centre
-		currentY = CalculateMazeY(position->Y, sourceRect->Height, backgroundTileHeight);
+		currentY = CalculateMazeY(position->Y, sourceRect->Height, tilesetTileHeight);
 
 		//if we have moved past the target tile, just consider it reached so that we don't get stuck
 		if (currentX <= newTileX && currentY == newTileY)
 			reachedNewTile = true;
 		break;
 	case RIGHT:
-		currentX = CalculateMazeX(position->X - sourceRect->Width / 4.0f, sourceRect->Width, backgroundTileWidth);
+		currentX = CalculateMazeX(position->X - sourceRect->Width / 4.0f, sourceRect->Width, tilesetTileWidth);
 		//subtracts offset so that the position is the centre
-		currentY = CalculateMazeY(position->Y, sourceRect->Height, backgroundTileHeight);
+		currentY = CalculateMazeY(position->Y, sourceRect->Height, tilesetTileHeight);
 
 		//if we have moved past the target tile, just consider it reached so that we don't get stuck
 		if (currentX >= newTileX && currentY == newTileY)
 			reachedNewTile = true;
 		break;
 	default:
-		currentX = CalculateMazeX(position->X, sourceRect->Width, backgroundTileWidth);
-		currentY = CalculateMazeY(position->Y, sourceRect->Height, backgroundTileHeight);
+		currentX = CalculateMazeX(position->X, sourceRect->Width, tilesetTileWidth);
+		currentY = CalculateMazeY(position->Y, sourceRect->Height, tilesetTileHeight);
 		break;
 	}
 }

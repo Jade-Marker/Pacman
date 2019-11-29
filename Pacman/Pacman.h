@@ -13,6 +13,8 @@
 #include "Maze.h"
 #include "Direction.h"
 #include "Enemy.h"
+#include "Player.h"
+#include "Menu.h"
 
 // Reduces the amount of typing by including all classes in S2D namespace
 using namespace S2D;
@@ -27,62 +29,49 @@ class Pacman : public Game
 private:
 	Enemy* _enemies[_enemyCount];
 
-	// Data to represent Pacman
-	Vector2* _pacmanPosition;
-	Rect* _pacmanSourceRect;
-	Texture2D* _pacmanTexture;
-	direction _pacmanDirection;
-	int _pacmanFrame;
-	int _pacmanCurrentFrameTime;
-
-	int _score;
-	Vector2* _scorePosition;
-	int _pelletsCollected;
-
-	int _level;
-	bool _levelEnd;
-	const int _cLevelEndDelay;
-	const int _cLevelStartDelay;
-
-	int _delayInMilli;
-	bool _delay;
-
-	bool _poweredUp;
-	int _powerTimer;
-	const int _cPoweredUpTime;
+	Player* _pacman;
 
 	//Pacman constants
 	const float _cPacmanSpeed;
 	const float _cPacmanPosOffset;
 	const int _cPacmanFrameTime;
 
-	// Data to represent Munchie
-	int _frameCount;
-	Rect* _munchieRect;
-	Texture2D* _munchieBlueTexture;
-	Texture2D* _munchieInvertedTexture;
+	//Score constants
+	const int _cPelletValue;
+	const int _cPowerPelletValue;
+	const int _cEnemyValue;
 
-	// Position for String
+	//Time constants
+	const int _cLevelEndDelay;
+	const int _cLevelStartDelay;
+	const int _cPoweredUpTime;
+
+	//Level data
+	int _pelletsCollected;
+	int _level;
+	bool _levelEnd;
+
+	//Delay data
+	int _delayInMilli;
+	bool _delay;
+
+	//Powered up data
+	bool _poweredUp;
+	int _powerTimer;
+
+	// Position for String output
 	Vector2* _stringPosition;
 
-	//Data for Pause Menu
-	Texture2D* _menuBackground;
-	Rect* _menuRectangle;
-	Vector2* _menuStringPosition;
-	bool _paused;
-	bool _pKeyDown;
-
-	//Data for Start menu
-	Texture2D* _startBackground;
-	bool _start;
+	Menu* _pauseMenu;
+	Menu* _startMenu;
 
 	//Data for overlay
 	Texture2D* _overlay;
 	Rect* _overlayRect;
 
 	//Data for maze
-	Texture2D* _backgroundElements;
-	Rect* _backgroundRect;
+	Texture2D* _mazeTileset;
+	Rect* _mazeTileRect;
 	Vector2* _backgroundPos;
 	int _noPelletsAvailable;
 	mazeUnits _maze[_mazeHeight][_mazeWidth];

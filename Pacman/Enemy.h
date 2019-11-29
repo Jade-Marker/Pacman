@@ -48,34 +48,36 @@ using namespace S2D;
 class Enemy
 {
 private:
+	enum ghostMode { CHASE, SCATTER, EATEN, FRIGHTENED, INHOUSE };
+	enum ghostType { BLINKY, PINKY, INKY, CLYDE };
+
 	Texture2D* texture;
 	Vector2* position;
 	Rect* sourceRect;
 	mazeUnits(*maze)[_mazeHeight][_mazeWidth];
-	enum ghostMode {CHASE, SCATTER, EATEN, FRIGHTENED, INHOUSE};
 	ghostMode currMode = CHASE;
 	unsigned int totalElapsedTime = 0;
 	direction currDirection = NONE;
 	bool reachedNewTile = true;
-	int newTileX, newTileY;
-	int targetX, targetY;
-	const float SPEED = 0.075f;
-	enum ghostType{BLINKY, PINKY, INKY, CLYDE};
+	int newTileX = 0;	int newTileY = 0;
+	int targetX = 0;	int targetY = 0;
 	ghostType ghost;
-	float backgroundTileWidth;
-	float backgroundTileHeight;
+	float tilesetTileWidth;
+	float tilesetTileHeight;
 	random_device rd;
 	mt19937 mt;
 	int currentFrameTime;
 	int frame;
-	const int FRAMETIME = 500;
 	bool turnedAroundWhenFrightened = false;
 	bool ableToLeaveHouse = false;
-	const int TIMETOLEAVEHOUSE = 700;
-	const float _cEatenSpeedMultiplier = 2.0f;
-	const float _cFrightenedSpeedMultiplier = 0.5f;
-	const int _cHouseX = 13;
-	const int _cHouseY = 14;
+
+	const int _cFrameTime;
+	const float _cSpeed;
+	const int _cTimeToLeaveHouse;
+	const float _cEatenSpeedMultiplier;
+	const float _cFrightenedSpeedMultiplier;
+	const int _cHouseX;
+	const int _cHouseY;
 
 	void CheckDirection(bool(&ableToMoveInDirections)[4], int currentX, int currentY);
 	void CalculateDirection(int currentX, int currentY);
