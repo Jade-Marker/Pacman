@@ -484,15 +484,7 @@ bool Enemy::PacmanCollision(float ghostX, float ghostY, float pacmanX, float pac
 /// <summary> Animates the ghost</summary>
 void Enemy::Animate(int elapsedTime)
 {
-	enemySprite->currentFrameTime += elapsedTime;
-	if (enemySprite->currentFrameTime > _cFrameTime)
-	{
-		enemySprite->frame++;
-		if (enemySprite->frame >= 2)
-			enemySprite->frame = 0;
-
-		enemySprite->currentFrameTime = 0;
-	}
+	enemySprite->Animate(elapsedTime, _cFrameTime);
 
 	switch (currMode)
 	{

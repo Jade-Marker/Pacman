@@ -5,8 +5,6 @@
 //todo
 //https://gameinternals.com/understanding-pac-man-ghost-behavior
 
-//Make the if(frame > framecount) part be part of sprite struct definition
-
 //Clean up Enemy.h
 
 //Get eating ghosts to add to the score
@@ -306,15 +304,7 @@ void Pacman::CheckStart(Input::KeyboardState* state, Input::Keys startKey)
 /// <summary> Update rect for pacman based on frame and direction </summary>
 void Pacman::UpdatePacman(int elapsedTime)
 {
-	_pacman->playerSprite.currentFrameTime += elapsedTime;
-	if (_pacman->playerSprite.currentFrameTime > _cPacmanFrameTime)
-	{
-		_pacman->playerSprite.frame++;
-		if (_pacman->playerSprite.frame >= 2)
-			_pacman->playerSprite.frame = 0;
-
-		_pacman->playerSprite.currentFrameTime = 0;
-	}
+	_pacman->playerSprite.Animate(elapsedTime, _cPacmanFrameTime);
 
 	_pacman->playerSprite.sourceRect->X = _pacman->playerSprite.sourceRect->Width * _pacman->playerSprite.frame;
 	_pacman->playerSprite.sourceRect->Y = _pacman->playerSprite.sourceRect->Height * _pacman->playerSprite.direction;
