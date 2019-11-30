@@ -5,8 +5,6 @@
 //todo
 //https://gameinternals.com/understanding-pac-man-ghost-behavior
 
-//Clean up Enemy.h
-
 //Get eating ghosts to add to the score
 
 //Finish destructor

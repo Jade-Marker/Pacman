@@ -52,30 +52,29 @@ private:
 	enum ghostMode { CHASE, SCATTER, EATEN, FRIGHTENED, INHOUSE };
 	enum ghostType { BLINKY, PINKY, INKY, CLYDE };
 
-	//Texture2D* texture;
-	//Vector2* position;
-	//Rect* sourceRect;
-	//int currentFrameTime;
-	//int frame;
-	//direction currDirection = NONE;
-
 	Sprite* enemySprite;
-
-	mazeUnits(*maze)[_mazeHeight][_mazeWidth];
-	ghostMode currMode = CHASE;
 	unsigned int totalElapsedTime = 0;
-	bool reachedNewTile = true;
-	int newTileX = 0;	int newTileY = 0;
-	int targetX = 0;	int targetY = 0;
-	ghostType ghost;
+
+	//Data for maze
+	mazeUnits(*maze)[_mazeHeight][_mazeWidth];
 	float tilesetTileWidth;
 	float tilesetTileHeight;
+
 	random_device rd;
 	mt19937 mt;
 
+	//Data for ghost state
 	bool turnedAroundWhenFrightened = false;
 	bool ableToLeaveHouse = false;
+	ghostMode currMode = CHASE;
+	ghostType ghost;
 
+	//Data for pathfinding
+	bool reachedNewTile = true;
+	int newTileX = 0;	int newTileY = 0;
+	int targetX = 0;	int targetY = 0;
+
+	//Constants
 	const int _cFrameTime;
 	const float _cSpeed;
 	const int _cTimeToLeaveHouse;
