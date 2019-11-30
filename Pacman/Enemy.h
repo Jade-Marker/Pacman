@@ -3,6 +3,7 @@
 #include "S2D/S2D.h"
 #include "Maze.h"
 #include "Direction.h"
+#include "Sprite.h"
 #include <random>
 using namespace S2D;
 //due to differences in certain parts of the AI, maybe have this be a base class and each ghost type be inherited
@@ -51,13 +52,18 @@ private:
 	enum ghostMode { CHASE, SCATTER, EATEN, FRIGHTENED, INHOUSE };
 	enum ghostType { BLINKY, PINKY, INKY, CLYDE };
 
-	Texture2D* texture;
-	Vector2* position;
-	Rect* sourceRect;
+	//Texture2D* texture;
+	//Vector2* position;
+	//Rect* sourceRect;
+	//int currentFrameTime;
+	//int frame;
+	//direction currDirection = NONE;
+
+	Sprite* enemySprite;
+
 	mazeUnits(*maze)[_mazeHeight][_mazeWidth];
 	ghostMode currMode = CHASE;
 	unsigned int totalElapsedTime = 0;
-	direction currDirection = NONE;
 	bool reachedNewTile = true;
 	int newTileX = 0;	int newTileY = 0;
 	int targetX = 0;	int targetY = 0;
@@ -66,8 +72,7 @@ private:
 	float tilesetTileHeight;
 	random_device rd;
 	mt19937 mt;
-	int currentFrameTime;
-	int frame;
+
 	bool turnedAroundWhenFrightened = false;
 	bool ableToLeaveHouse = false;
 

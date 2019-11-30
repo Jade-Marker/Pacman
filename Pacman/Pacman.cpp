@@ -5,7 +5,7 @@
 //todo
 //https://gameinternals.com/understanding-pac-man-ghost-behavior
 
-//Make a base struct which the player and enemy are inherited from as they share a lot of elements
+//Make the if(frame > framecount) part be part of sprite struct definition
 
 //Clean up Enemy.h
 
@@ -35,9 +35,9 @@
 Pacman::Pacman(int argc, char* argv[]) : Game(argc, argv), _cPacmanSpeed(0.1f), _cPacmanPosOffset(20.0f), _cPacmanFrameTime(250), _cLevelEndDelay(1000), _cLevelStartDelay(2000), _cPoweredUpTime(7000), _cPelletValue(10), _cPowerPelletValue(20), _cEnemyValue(50)
 {
 	_pacman = new Player();
-	_pacman->direction = RIGHT;
-	_pacman->currentFrameTime = 0;
-	_pacman->frame = 0;
+	_pacman->playerSprite.direction = RIGHT;
+	_pacman->playerSprite.currentFrameTime = 0;
+	_pacman->playerSprite.frame = 0;
 	_pacman->score = 0;
 
 	_pauseMenu = new Menu();
@@ -70,8 +70,8 @@ Pacman::Pacman(int argc, char* argv[]) : Game(argc, argv), _cPacmanSpeed(0.1f), 
 
 Pacman::~Pacman()
 {
-	delete _pacman->texture;
-	delete _pacman->sourceRect;
+	delete _pacman->playerSprite.texture;
+	delete _pacman->playerSprite.sourceRect;
 }
 
 void Pacman::LoadContent()
@@ -83,10 +83,10 @@ void Pacman::LoadContent()
 	_backgroundPos = new Vector2();
 
 	// Load Pacman
-	_pacman->texture = new Texture2D();
-	_pacman->texture->Load("Textures/Pacman.png", false);
-	_pacman->sourceRect = new Rect(0.0f, 0.0f, 64, 64);
-	_pacman->position = new Vector2(Graphics::GetViewportWidth() / 2.0f - _pacman->sourceRect->Width / 2.0f, 17 * _mazeTileRect->Width - _pacman->sourceRect->Height / 4.0f);
+	_pacman->playerSprite.texture = new Texture2D();
+	_pacman->playerSprite.texture->Load("Textures/Pacman.png", false);
+	_pacman->playerSprite.sourceRect = new Rect(0.0f, 0.0f, 64, 64);
+	_pacman->playerSprite.position = new Vector2(Graphics::GetViewportWidth() / 2.0f - _pacman->playerSprite.sourceRect->Width / 2.0f, 17 * _mazeTileRect->Width - _pacman->playerSprite.sourceRect->Height / 4.0f);
 
 	// Set string position
 	_stringPosition = new Vector2(10.0f, 25.0f);
@@ -137,7 +137,7 @@ void Pacman::Update(int elapsedTime)
 					bool colidedWithGhost = false;
 					bool ghostInChaseOrScatter = false;
 
-					_enemies[i]->Update(elapsedTime, _level, _pacman->direction, _pacman->position->X, _pacman->position->Y, _enemies[0], _poweredUp, colidedWithGhost, ghostInChaseOrScatter);
+					_enemies[i]->Update(elapsedTime, _level, _pacman->playerSprite.direction, _pacman->playerSprite.position->X, _pacman->playerSprite.position->Y, _enemies[0], _poweredUp, colidedWithGhost, ghostInChaseOrScatter);
 					if (colidedWithGhost)
 					{
 						if (!ghostInChaseOrScatter)
@@ -174,8 +174,8 @@ void Pacman::Draw(int elapsedTime)
 	std::stringstream stream;
 	int outputX, outputY;
 
-	outputX = CalculateMazeX(_pacman->position->X, _pacman->sourceRect->Width, _mazeTileRect->Width);
-	outputY = CalculateMazeY(_pacman->position->Y, _pacman->sourceRect->Height, _mazeTileRect->Height);
+	outputX = CalculateMazeX(_pacman->playerSprite.position->X, _pacman->playerSprite.sourceRect->Width, _mazeTileRect->Width);
+	outputY = CalculateMazeY(_pacman->playerSprite.position->Y, _pacman->playerSprite.sourceRect->Height, _mazeTileRect->Height);
 
 	//stream << "Currently on: " << _maze[outputY][outputX];
 	stream << "Pacman X: " << outputX << " Y: " << outputY;
@@ -219,7 +219,7 @@ void Pacman::Draw(int elapsedTime)
 			}
 		}
 
-		SpriteBatch::Draw(_pacman->texture, _pacman->position, _pacman->sourceRect); // Draws Pacman
+		SpriteBatch::Draw(_pacman->playerSprite.texture, _pacman->playerSprite.position, _pacman->playerSprite.sourceRect); // Draws Pacman
 
 		//Draw enemies
 		for (int i = 0; i < _enemyCount; i++)
@@ -254,28 +254,28 @@ void Pacman::Input(int elapsedTime, Input::KeyboardState* state)
 	//Horizontal movement
 	if (state->IsKeyDown(Input::Keys::D))
 	{
-		_pacman->direction = RIGHT;
-		if (CollisionCheck(_pacman->position->X + _cPacmanSpeed * elapsedTime, _pacman->position->Y, RIGHT))
-			_pacman->position->X += _cPacmanSpeed * elapsedTime;
+		_pacman->playerSprite.direction = RIGHT;
+		if (CollisionCheck(_pacman->playerSprite.position->X + _cPacmanSpeed * elapsedTime, _pacman->playerSprite.position->Y, RIGHT))
+			_pacman->playerSprite.position->X += _cPacmanSpeed * elapsedTime;
 	}
 	else if (state->IsKeyDown(Input::Keys::A))
 	{
-		_pacman->direction = LEFT;
-		if (CollisionCheck(_pacman->position->X - _cPacmanSpeed * elapsedTime, _pacman->position->Y, LEFT))
-			_pacman->position->X -= _cPacmanSpeed * elapsedTime;
+		_pacman->playerSprite.direction = LEFT;
+		if (CollisionCheck(_pacman->playerSprite.position->X - _cPacmanSpeed * elapsedTime, _pacman->playerSprite.position->Y, LEFT))
+			_pacman->playerSprite.position->X -= _cPacmanSpeed * elapsedTime;
 	}
 	//Vertical movement
 	else if (state->IsKeyDown(Input::Keys::W))
 	{
-		_pacman->direction = UP;
-		if (CollisionCheck(_pacman->position->X, _pacman->position->Y - _cPacmanSpeed * elapsedTime, UP))
-			_pacman->position->Y -= _cPacmanSpeed * elapsedTime;
+		_pacman->playerSprite.direction = UP;
+		if (CollisionCheck(_pacman->playerSprite.position->X, _pacman->playerSprite.position->Y - _cPacmanSpeed * elapsedTime, UP))
+			_pacman->playerSprite.position->Y -= _cPacmanSpeed * elapsedTime;
 	}
 	else if (state->IsKeyDown(Input::Keys::S))
 	{
-		_pacman->direction = DOWN;
-		if (CollisionCheck(_pacman->position->X, _pacman->position->Y + _cPacmanSpeed * elapsedTime, DOWN))
-			_pacman->position->Y += _cPacmanSpeed * elapsedTime;
+		_pacman->playerSprite.direction = DOWN;
+		if (CollisionCheck(_pacman->playerSprite.position->X, _pacman->playerSprite.position->Y + _cPacmanSpeed * elapsedTime, DOWN))
+			_pacman->playerSprite.position->Y += _cPacmanSpeed * elapsedTime;
 	}
 }
 
@@ -306,18 +306,18 @@ void Pacman::CheckStart(Input::KeyboardState* state, Input::Keys startKey)
 /// <summary> Update rect for pacman based on frame and direction </summary>
 void Pacman::UpdatePacman(int elapsedTime)
 {
-	_pacman->currentFrameTime += elapsedTime;
-	if (_pacman->currentFrameTime > _cPacmanFrameTime)
+	_pacman->playerSprite.currentFrameTime += elapsedTime;
+	if (_pacman->playerSprite.currentFrameTime > _cPacmanFrameTime)
 	{
-		_pacman->frame++;
-		if (_pacman->frame >= 2)
-			_pacman->frame = 0;
+		_pacman->playerSprite.frame++;
+		if (_pacman->playerSprite.frame >= 2)
+			_pacman->playerSprite.frame = 0;
 
-		_pacman->currentFrameTime = 0;
+		_pacman->playerSprite.currentFrameTime = 0;
 	}
 
-	_pacman->sourceRect->X = _pacman->sourceRect->Width * _pacman->frame;
-	_pacman->sourceRect->Y = _pacman->sourceRect->Height * _pacman->direction;
+	_pacman->playerSprite.sourceRect->X = _pacman->playerSprite.sourceRect->Width * _pacman->playerSprite.frame;
+	_pacman->playerSprite.sourceRect->Y = _pacman->playerSprite.sourceRect->Height * _pacman->playerSprite.direction;
 }
 
 /// <summary> Returns true if Pacman is able to move </summary>
@@ -330,32 +330,32 @@ bool Pacman::CollisionCheck(float pacmanX, float pacmanY, direction directionOfM
 	switch (directionOfMovement)
 	{
 	case UP:
-		roundedX = CalculateMazeX(_pacman->position->X, _pacman->sourceRect->Width, _mazeTileRect->Width);
-		roundedY = CalculateMazeY(_pacman->position->Y - _cPacmanPosOffset, _pacman->sourceRect->Height, _mazeTileRect->Height);
+		roundedX = CalculateMazeX(_pacman->playerSprite.position->X, _pacman->playerSprite.sourceRect->Width, _mazeTileRect->Width);
+		roundedY = CalculateMazeY(_pacman->playerSprite.position->Y - _cPacmanPosOffset, _pacman->playerSprite.sourceRect->Height, _mazeTileRect->Height);
 		//subtracts offset so that the position is the centre
 		break;
 
 	case DOWN:
-		roundedX = CalculateMazeX(_pacman->position->X, _pacman->sourceRect->Width, _mazeTileRect->Width);
-		roundedY = CalculateMazeY(_pacman->position->Y + _cPacmanPosOffset, _pacman->sourceRect->Height, _mazeTileRect->Height);;
+		roundedX = CalculateMazeX(_pacman->playerSprite.position->X, _pacman->playerSprite.sourceRect->Width, _mazeTileRect->Width);
+		roundedY = CalculateMazeY(_pacman->playerSprite.position->Y + _cPacmanPosOffset, _pacman->playerSprite.sourceRect->Height, _mazeTileRect->Height);;
 		//adds offset so that the position is the centre
 		break;
 
 	case LEFT:
-		roundedX = CalculateMazeX(_pacman->position->X - _cPacmanPosOffset, _pacman->sourceRect->Width, _mazeTileRect->Width);
+		roundedX = CalculateMazeX(_pacman->playerSprite.position->X - _cPacmanPosOffset, _pacman->playerSprite.sourceRect->Width, _mazeTileRect->Width);
 		//subtracts offset so that the position is the centre
-		roundedY = CalculateMazeY(_pacman->position->Y, _pacman->sourceRect->Height, _mazeTileRect->Height);
+		roundedY = CalculateMazeY(_pacman->playerSprite.position->Y, _pacman->playerSprite.sourceRect->Height, _mazeTileRect->Height);
 		break;
 
 	case RIGHT:
-		roundedX = CalculateMazeX(_pacman->position->X + _cPacmanPosOffset, _pacman->sourceRect->Width, _mazeTileRect->Width);
+		roundedX = CalculateMazeX(_pacman->playerSprite.position->X + _cPacmanPosOffset, _pacman->playerSprite.sourceRect->Width, _mazeTileRect->Width);
 		//adds offset so that the position is the centre
-		roundedY = CalculateMazeY(_pacman->position->Y, _pacman->sourceRect->Height, _mazeTileRect->Height);
+		roundedY = CalculateMazeY(_pacman->playerSprite.position->Y, _pacman->playerSprite.sourceRect->Height, _mazeTileRect->Height);
 		break;
 
 	default:
-		roundedX = CalculateMazeX(_pacman->position->X, _pacman->sourceRect->Width, _mazeTileRect->Width);
-		roundedY = CalculateMazeY(_pacman->position->Y, _pacman->sourceRect->Height, _mazeTileRect->Height);
+		roundedX = CalculateMazeX(_pacman->playerSprite.position->X, _pacman->playerSprite.sourceRect->Width, _mazeTileRect->Width);
+		roundedY = CalculateMazeY(_pacman->playerSprite.position->Y, _pacman->playerSprite.sourceRect->Height, _mazeTileRect->Height);
 		break;
 	}
 
@@ -397,15 +397,15 @@ int Pacman::GetNoOfPellets(mazeUnits(&mazeToCheck)[_mazeHeight][_mazeWidth])
 /// <summary> Checks if the player is colliding with a pellet and increments score if they are </summary>
 void Pacman::PelletCollisionCheck()
 {
-	if (_maze[CalculateMazeY(_pacman->position->Y,_pacman->sourceRect->Height,_mazeTileRect->Height)][CalculateMazeX(_pacman->position->X, _pacman->sourceRect->Width,_mazeTileRect->Width)] == PELLET)
+	if (_maze[CalculateMazeY(_pacman->playerSprite.position->Y,_pacman->playerSprite.sourceRect->Height,_mazeTileRect->Height)][CalculateMazeX(_pacman->playerSprite.position->X, _pacman->playerSprite.sourceRect->Width,_mazeTileRect->Width)] == PELLET)
 	{
-		_maze[CalculateMazeY(_pacman->position->Y, _pacman->sourceRect->Height, _mazeTileRect->Height)][CalculateMazeX(_pacman->position->X, _pacman->sourceRect->Width, _mazeTileRect->Width)] = EMPTY;
+		_maze[CalculateMazeY(_pacman->playerSprite.position->Y, _pacman->playerSprite.sourceRect->Height, _mazeTileRect->Height)][CalculateMazeX(_pacman->playerSprite.position->X, _pacman->playerSprite.sourceRect->Width, _mazeTileRect->Width)] = EMPTY;
 		_pacman->score += _cPelletValue;
 		_pelletsCollected++;
 	}
-	else if (_maze[CalculateMazeY(_pacman->position->Y, _pacman->sourceRect->Height, _mazeTileRect->Height)][CalculateMazeX(_pacman->position->X, _pacman->sourceRect->Width, _mazeTileRect->Width)] == POWER_PELLET)
+	else if (_maze[CalculateMazeY(_pacman->playerSprite.position->Y, _pacman->playerSprite.sourceRect->Height, _mazeTileRect->Height)][CalculateMazeX(_pacman->playerSprite.position->X, _pacman->playerSprite.sourceRect->Width, _mazeTileRect->Width)] == POWER_PELLET)
 	{
-		_maze[CalculateMazeY(_pacman->position->Y, _pacman->sourceRect->Height, _mazeTileRect->Height)][CalculateMazeX(_pacman->position->X, _pacman->sourceRect->Width, _mazeTileRect->Width)] = EMPTY;
+		_maze[CalculateMazeY(_pacman->playerSprite.position->Y, _pacman->playerSprite.sourceRect->Height, _mazeTileRect->Height)][CalculateMazeX(_pacman->playerSprite.position->X, _pacman->playerSprite.sourceRect->Width, _mazeTileRect->Width)] = EMPTY;
 		_pacman->score += _cPowerPelletValue;
 		_pelletsCollected++;
 		_poweredUp = true;
@@ -416,14 +416,14 @@ void Pacman::PelletCollisionCheck()
 /// <summary> Checks if pacman has gone off screen and then alters pacmans position </summary>
 void Pacman::ScreenWrapCheck(const float leftLimit, const float rightLimit)
 {
-	if (_pacman->position->X < leftLimit)
+	if (_pacman->playerSprite.position->X < leftLimit)
 	{
-		_pacman->position->X += (_mazeWidth + 1) * _mazeTileRect->Width;
+		_pacman->playerSprite.position->X += (_mazeWidth + 1) * _mazeTileRect->Width;
 	}
 
-	if (_pacman->position->X > rightLimit)
+	if (_pacman->playerSprite.position->X > rightLimit)
 	{
-		_pacman->position->X -= (_mazeWidth + 2) * _mazeTileRect->Width;
+		_pacman->playerSprite.position->X -= (_mazeWidth + 2) * _mazeTileRect->Width;
 	}
 }
 
@@ -452,8 +452,8 @@ void Pacman::LevelWinCheck()
 /// <summary> Resets pacman position, enemies and powerup timer</summary>
 void Pacman::ResetLevel()
 {
-	_pacman->position->X = Graphics::GetViewportWidth() / 2.0f - _pacman->sourceRect->Width / 2.0f;
-	_pacman->position->Y = 17 * _mazeTileRect->Width - _pacman->sourceRect->Height / 4.0f;
+	_pacman->playerSprite.position->X = Graphics::GetViewportWidth() / 2.0f - _pacman->playerSprite.sourceRect->Width / 2.0f;
+	_pacman->playerSprite.position->Y = 17 * _mazeTileRect->Width - _pacman->playerSprite.sourceRect->Height / 4.0f;
 
 	_poweredUp = false;
 	_powerTimer = 0;
@@ -494,25 +494,25 @@ void Pacman::CreateAndInitGhosts()
 	Texture2D* blinkyTexture = new Texture2D();
 	blinkyTexture->Load("Textures/Blinky.png", false);
 	Rect* blinkyRect = new Rect(0.0f, 0.0f, 64, 64);
-	Vector2* blinkyPosition = new Vector2(Graphics::GetViewportWidth() / 2.0f - _pacman->sourceRect->Width / 2.0f, 11 * _mazeTileRect->Width - _pacman->sourceRect->Height / 4.0f);
+	Vector2* blinkyPosition = new Vector2(Graphics::GetViewportWidth() / 2.0f - _pacman->playerSprite.sourceRect->Width / 2.0f, 11 * _mazeTileRect->Width - _pacman->playerSprite.sourceRect->Height / 4.0f);
 	_enemies[0] = new Enemy(blinkyTexture, blinkyPosition, blinkyRect, &_maze, 0, _mazeTileRect->Width, _mazeTileRect->Height);
 
 	Texture2D* pinkyTexture = new Texture2D();
 	pinkyTexture->Load("Textures/Pinky.png", false);
 	Rect* pinkyRect = new Rect(0.0f, 0.0f, 64, 64);
-	Vector2* pinkyPosition = new Vector2(Graphics::GetViewportWidth() / 2.0f - _pacman->sourceRect->Width / 2.0f, 14 * _mazeTileRect->Width - _pacman->sourceRect->Height / 4.0f);
+	Vector2* pinkyPosition = new Vector2(Graphics::GetViewportWidth() / 2.0f - _pacman->playerSprite.sourceRect->Width / 2.0f, 14 * _mazeTileRect->Width - _pacman->playerSprite.sourceRect->Height / 4.0f);
 	_enemies[1] = new Enemy(pinkyTexture, pinkyPosition, pinkyRect, &_maze, 1, _mazeTileRect->Width, _mazeTileRect->Height);
 
 	Texture2D* inkyTexture = new Texture2D();
 	inkyTexture->Load("Textures/Inky.png", false);
 	Rect* inkyRect = new Rect(0.0f, 0.0f, 64, 64);
-	Vector2* inkyPos = new Vector2(Graphics::GetViewportWidth() / 2.0f - _pacman->sourceRect->Width / 2.0f, 14 * _mazeTileRect->Width - _pacman->sourceRect->Height / 4.0f);
+	Vector2* inkyPos = new Vector2(Graphics::GetViewportWidth() / 2.0f - _pacman->playerSprite.sourceRect->Width / 2.0f, 14 * _mazeTileRect->Width - _pacman->playerSprite.sourceRect->Height / 4.0f);
 	_enemies[2] = new Enemy(inkyTexture, inkyPos, inkyRect, &_maze, 2, _mazeTileRect->Width, _mazeTileRect->Height);
 
 	Texture2D* clydeTexture = new Texture2D();
 	clydeTexture->Load("Textures/Clyde.png", false);
 	Rect* clydeRect = new Rect(0.0f, 0.0f, 64, 64);
-	Vector2* clydePosition = new Vector2(Graphics::GetViewportWidth() / 2.0f - _pacman->sourceRect->Width / 2.0f, 14 * _mazeTileRect->Width - _pacman->sourceRect->Height / 4.0f);
+	Vector2* clydePosition = new Vector2(Graphics::GetViewportWidth() / 2.0f - _pacman->playerSprite.sourceRect->Width / 2.0f, 14 * _mazeTileRect->Width - _pacman->playerSprite.sourceRect->Height / 4.0f);
 	_enemies[3] = new Enemy(clydeTexture, clydePosition, clydeRect, &_maze, 3, _mazeTileRect->Width, _mazeTileRect->Height);
 }
 

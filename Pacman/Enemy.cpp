@@ -2,9 +2,12 @@
 /// <summary> Constructs the Enemy class. </summary>
 Enemy::Enemy(Texture2D* textureInput, Vector2* positionInput, Rect* sourceRectInput, mazeUnits (*mazeInput)[_mazeHeight][_mazeWidth], int ghostNumber, float backgroundElementWidth, float backgroundElementHeight): _cSpeed(0.075f), _cFrameTime(500), _cTimeToLeaveHouse(700), _cEatenSpeedMultiplier(2.0f), _cFrightenedSpeedMultiplier(0.5f), _cHouseX(13), _cHouseY(14)
 {
-	texture = textureInput;
-	position = positionInput;
-	sourceRect = sourceRectInput;
+	enemySprite = new Sprite();
+
+	enemySprite->texture = textureInput;
+	enemySprite->position = positionInput;
+	enemySprite->sourceRect = sourceRectInput;
+	enemySprite->direction = NONE;
 	maze = mazeInput;
 
 	ghost = static_cast<ghostType>(ghostNumber);
@@ -17,8 +20,8 @@ Enemy::Enemy(Texture2D* textureInput, Vector2* positionInput, Rect* sourceRectIn
 
 	uniform_int_distribution<int> dist(0, _cFrameTime);
 
-	currentFrameTime = dist(mt);
-	frame = dist(mt) % 2;
+	enemySprite->currentFrameTime = dist(mt);
+	enemySprite->frame = dist(mt) % 2;
 
 	if (ghost != BLINKY)
 	{
@@ -30,25 +33,25 @@ Enemy::Enemy(Texture2D* textureInput, Vector2* positionInput, Rect* sourceRectIn
 /// <summary> Returns a constant pointer to the texture, so that it can be accessed but not modified </summary>
 const Texture2D* Enemy::GetTexturePointer()
 {
-	return texture;
+	return enemySprite->texture;
 }
 
 /// <summary> Returns a constant pointer to the position, so that it can be accessed but not modified </summary>
 const Vector2* Enemy::GetVectorPointer()
 {
-	return position;
+	return enemySprite->position;
 }
 
 /// <summary> Returns a constant pointer to the rect, so that it can be accessed but not modified </summary>
 const Rect* Enemy::GetRectPointer()
 {
-	return sourceRect;
+	return enemySprite->sourceRect;
 }
 
 void Enemy::Update(int elapsedTime, int level, direction pacmanDirection, float pacmanXPos, float pacmanYPos, Enemy* blinky, bool pacmanPoweredUp, bool& collidedWithPacman, bool& inChaseOrScatterMode)
 {
-	int pacmanX = CalculateMazeX(pacmanXPos, sourceRect->Width, tilesetTileWidth);
-	int pacmanY = CalculateMazeY(pacmanYPos, sourceRect->Height, tilesetTileHeight);
+	int pacmanX = CalculateMazeX(pacmanXPos, enemySprite->sourceRect->Width, tilesetTileWidth);
+	int pacmanY = CalculateMazeY(pacmanYPos, enemySprite->sourceRect->Height, tilesetTileHeight);
 
 	int currentX;
 	int currentY;
@@ -66,7 +69,7 @@ void Enemy::Update(int elapsedTime, int level, direction pacmanDirection, float 
 
 				//turn around when entering frightened mode
 				if (!turnedAroundWhenFrightened) {
-					currDirection = OppositeDirection(currDirection);
+					enemySprite->direction = OppositeDirection(enemySprite->direction);
 					turnedAroundWhenFrightened = true;
 				}
 			}
@@ -95,7 +98,7 @@ void Enemy::Update(int elapsedTime, int level, direction pacmanDirection, float 
 	ScreenWrapCheck();
 
 	//now need to check if we've collided with pacman
-	collidedWithPacman = PacmanCollision(position->X, position->Y, pacmanXPos, pacmanYPos);
+	collidedWithPacman = PacmanCollision(enemySprite->position->X, enemySprite->position->Y, pacmanXPos, pacmanYPos);
 }
 
 /// <summary> Called by pacman to show that the ghost has been eaten</summary>
@@ -140,19 +143,19 @@ void Enemy::CalculateDirection(int currentX, int currentY)
 	bool ableToMoveInDir[4] = { true,true,true,true };
 	int distSquared;
 	int smallestDistSquared = INT_MAX;
-	direction newDirection = currDirection;
+	direction newDirection = enemySprite->direction;
 
 	CheckDirection(ableToMoveInDir, currentX, currentY);
 
 	//up, left, down, right is the priority
-	//ghost can't move backwards, so each internal if has currDirection != opposite direction
+	//ghost can't move backwards, so each internal if has enemySprite->direction != opposite direction
 	//The ghosts use a greedy shortest path algorithm, so they look for the direction which gives the shortest distance
 	//distance is left as squared, as if the distance is smallest squared, it is also smallest when rooted
 
 	if (ableToMoveInDir[0])
 	{
 		distSquared = DistanceSquared(targetX, currentX, targetY, currentY - 1);
-		if (distSquared < smallestDistSquared && currDirection != DOWN)
+		if (distSquared < smallestDistSquared && enemySprite->direction != DOWN)
 		{
 			smallestDistSquared = distSquared;
 			newDirection = UP;
@@ -163,7 +166,7 @@ void Enemy::CalculateDirection(int currentX, int currentY)
 	if (ableToMoveInDir[1])
 	{
 		distSquared = DistanceSquared(targetX, currentX - 1, targetY, currentY);
-		if (distSquared < smallestDistSquared && currDirection != RIGHT)
+		if (distSquared < smallestDistSquared && enemySprite->direction != RIGHT)
 		{
 			smallestDistSquared = distSquared;
 			newDirection = LEFT;
@@ -174,7 +177,7 @@ void Enemy::CalculateDirection(int currentX, int currentY)
 	if (ableToMoveInDir[2])
 	{
 		distSquared = DistanceSquared(targetX, currentX, targetY, currentY + 1);
-		if (distSquared < smallestDistSquared && currDirection != UP)
+		if (distSquared < smallestDistSquared && enemySprite->direction != UP)
 		{
 			smallestDistSquared = distSquared;
 			newDirection = DOWN;
@@ -185,7 +188,7 @@ void Enemy::CalculateDirection(int currentX, int currentY)
 	if (ableToMoveInDir[3])
 	{
 		distSquared = DistanceSquared(targetX, currentX + 1, targetY, currentY);
-		if (distSquared < smallestDistSquared && currDirection != LEFT)
+		if (distSquared < smallestDistSquared && enemySprite->direction != LEFT)
 		{
 			smallestDistSquared = distSquared;
 			newDirection = RIGHT;
@@ -193,7 +196,7 @@ void Enemy::CalculateDirection(int currentX, int currentY)
 			newTileY = currentY;
 		}
 	}
-	currDirection = newDirection;
+	enemySprite->direction = newDirection;
 }
 
 /// <summary> Calculates the squared distance between two points</summary>
@@ -211,8 +214,8 @@ void Enemy::Chase(int currentX, int currentY, int pacmanX, int pacmanY, directio
 	int vectorX, vectorY;
 
 	//blinky x&y calculated as the target tile for Inky is set based on blinkys target tile
-	blinkyX = CalculateMazeX(blinky->GetVectorPointer()->X, sourceRect->Width, tilesetTileWidth);
-	blinkyY = CalculateMazeY(blinky->GetVectorPointer()->Y, sourceRect->Width, tilesetTileHeight);
+	blinkyX = CalculateMazeX(blinky->GetVectorPointer()->X, enemySprite->sourceRect->Width, tilesetTileWidth);
+	blinkyY = CalculateMazeY(blinky->GetVectorPointer()->Y, enemySprite->sourceRect->Width, tilesetTileHeight);
 
 	//set target tile based on type of ghost
 	switch (ghost)
@@ -429,22 +432,22 @@ void Enemy::Move(int elapsedTime)
 		break;
 	}
 
-	switch (currDirection)
+	switch (enemySprite->direction)
 	{
 	case UP:
-		position->Y -= moveAmount;
+		enemySprite->position->Y -= moveAmount;
 		break;
 
 	case DOWN:
-		position->Y += moveAmount;
+		enemySprite->position->Y += moveAmount;
 		break;
 
 	case LEFT:
-		position->X -= moveAmount;
+		enemySprite->position->X -= moveAmount;
 		break;
 
 	case RIGHT:
-		position->X += moveAmount;
+		enemySprite->position->X += moveAmount;
 		break;
 	}
 }
@@ -452,15 +455,15 @@ void Enemy::Move(int elapsedTime)
 /// <summary> Checks if the ghost has gone off the screen and wraps them back around if they have</summary>
 void Enemy::ScreenWrapCheck()
 {
-	if (position->X < Graphics::GetViewportWidth() / 2.0f - ((_mazeWidth + 4) * tilesetTileWidth) / 2.0f)
+	if (enemySprite->position->X < Graphics::GetViewportWidth() / 2.0f - ((_mazeWidth + 4) * tilesetTileWidth) / 2.0f)
 	{
-		position->X += (_mazeWidth + 1) * tilesetTileWidth;
+		enemySprite->position->X += (_mazeWidth + 1) * tilesetTileWidth;
 		newTileX = _mazeWidth;
 	}
 
-	if (position->X > Graphics::GetViewportWidth() / 2.0f + ((_mazeWidth + 1) * tilesetTileWidth) / 2.0f)
+	if (enemySprite->position->X > Graphics::GetViewportWidth() / 2.0f + ((_mazeWidth + 1) * tilesetTileWidth) / 2.0f)
 	{
-		position->X -= (_mazeWidth + 2) * tilesetTileWidth;
+		enemySprite->position->X -= (_mazeWidth + 2) * tilesetTileWidth;
 		newTileX = 0;
 	}
 }
@@ -468,27 +471,27 @@ void Enemy::ScreenWrapCheck()
 /// <summary> Checks if the ghost has collided with pacman</summary>
 bool Enemy::PacmanCollision(float ghostX, float ghostY, float pacmanX, float pacmanY)
 {
-	float collisionCentreX = ghostX + sourceRect->Width / 2.0f;
-	float collisionCentreY = ghostY + sourceRect->Height / 2.0f;
+	float collisionCentreX = ghostX + enemySprite->sourceRect->Width / 2.0f;
+	float collisionCentreY = ghostY + enemySprite->sourceRect->Height / 2.0f;
 
 	//each offset is 1/4 of the width or height so that the centre +- the offset is the coordinate of an edge
-	float xOffset = sourceRect->Width / 4.0f;
-	float yOffset = sourceRect->Height / 4.0f;
+	float xOffset = enemySprite->sourceRect->Width / 4.0f;
+	float yOffset = enemySprite->sourceRect->Height / 4.0f;
 
-	return ((collisionCentreX - xOffset < pacmanX + sourceRect->Width) && (collisionCentreX + xOffset > pacmanX) && (collisionCentreY - yOffset < pacmanY + sourceRect->Height) && (collisionCentreY + yOffset > pacmanY));
+	return ((collisionCentreX - xOffset < pacmanX + enemySprite->sourceRect->Width) && (collisionCentreX + xOffset > pacmanX) && (collisionCentreY - yOffset < pacmanY + enemySprite->sourceRect->Height) && (collisionCentreY + yOffset > pacmanY));
 }
 
 /// <summary> Animates the ghost</summary>
 void Enemy::Animate(int elapsedTime)
 {
-	currentFrameTime += elapsedTime;
-	if (currentFrameTime > _cFrameTime)
+	enemySprite->currentFrameTime += elapsedTime;
+	if (enemySprite->currentFrameTime > _cFrameTime)
 	{
-		frame++;
-		if (frame >= 2)
-			frame = 0;
+		enemySprite->frame++;
+		if (enemySprite->frame >= 2)
+			enemySprite->frame = 0;
 
-		currentFrameTime = 0;
+		enemySprite->currentFrameTime = 0;
 	}
 
 	switch (currMode)
@@ -496,19 +499,18 @@ void Enemy::Animate(int elapsedTime)
 	case CHASE:
 	case SCATTER:
 	case INHOUSE:
-		sourceRect->X = sourceRect->Width * currDirection;
+		enemySprite->sourceRect->X = enemySprite->sourceRect->Width * enemySprite->direction;
 		break;
 
 	case FRIGHTENED:
-		sourceRect->X = sourceRect->Width * 8;
+		enemySprite->sourceRect->X = enemySprite->sourceRect->Width * 8;
 		break;
 
 	case EATEN:
-		sourceRect->X = sourceRect->Width * 4 + sourceRect->Width * currDirection;
+		enemySprite->sourceRect->X = enemySprite->sourceRect->Width * 4 + enemySprite->sourceRect->Width * enemySprite->direction;
 		break;
 	}
-	sourceRect->Y = sourceRect->Width * frame;
-
+	enemySprite->sourceRect->Y = enemySprite->sourceRect->Width * enemySprite->frame;
 }
 
 /// <summary> Returns the mode the ghost should be in based on the time</summary>
@@ -538,11 +540,11 @@ Enemy::ghostMode Enemy::GetMode(unsigned int totalElapsedTime)
 /// <summary> Returns the position the ghost has in the maze</summary>
 void Enemy::GetCurrentPosition(int& currentX, int& currentY)
 {
-	switch (currDirection)
+	switch (enemySprite->direction)
 	{
 	case UP:
-		currentX = CalculateMazeX(position->X, sourceRect->Width, tilesetTileWidth);
-		currentY = CalculateMazeY(position->Y + sourceRect->Height / 4.0f, sourceRect->Height, tilesetTileHeight);
+		currentX = CalculateMazeX(enemySprite->position->X, enemySprite->sourceRect->Width, tilesetTileWidth);
+		currentY = CalculateMazeY(enemySprite->position->Y + enemySprite->sourceRect->Height / 4.0f, enemySprite->sourceRect->Height, tilesetTileHeight);
 		//adds offset so that the position is the centre
 
 		if (currentX == newTileX && currentY <= newTileY)
@@ -550,8 +552,8 @@ void Enemy::GetCurrentPosition(int& currentX, int& currentY)
 		break;
 
 	case DOWN:
-		currentX = CalculateMazeX(position->X, sourceRect->Width, tilesetTileWidth);
-		currentY = CalculateMazeY(position->Y - sourceRect->Height / 4.0f, sourceRect->Height, tilesetTileHeight);
+		currentX = CalculateMazeX(enemySprite->position->X, enemySprite->sourceRect->Width, tilesetTileWidth);
+		currentY = CalculateMazeY(enemySprite->position->Y - enemySprite->sourceRect->Height / 4.0f, enemySprite->sourceRect->Height, tilesetTileHeight);
 		//subtracts offset so that the position is the centre
 
 		//if we have moved past the target tile, just consider it reached so that we don't get stuck
@@ -559,26 +561,26 @@ void Enemy::GetCurrentPosition(int& currentX, int& currentY)
 			reachedNewTile = true;
 		break;
 	case LEFT:
-		currentX = CalculateMazeX(position->X + sourceRect->Width / 4.0f, sourceRect->Width, tilesetTileWidth);
+		currentX = CalculateMazeX(enemySprite->position->X + enemySprite->sourceRect->Width / 4.0f, enemySprite->sourceRect->Width, tilesetTileWidth);
 		//adds offset so that the position is the centre
-		currentY = CalculateMazeY(position->Y, sourceRect->Height, tilesetTileHeight);
+		currentY = CalculateMazeY(enemySprite->position->Y, enemySprite->sourceRect->Height, tilesetTileHeight);
 
 		//if we have moved past the target tile, just consider it reached so that we don't get stuck
 		if (currentX <= newTileX && currentY == newTileY)
 			reachedNewTile = true;
 		break;
 	case RIGHT:
-		currentX = CalculateMazeX(position->X - sourceRect->Width / 4.0f, sourceRect->Width, tilesetTileWidth);
+		currentX = CalculateMazeX(enemySprite->position->X - enemySprite->sourceRect->Width / 4.0f, enemySprite->sourceRect->Width, tilesetTileWidth);
 		//subtracts offset so that the position is the centre
-		currentY = CalculateMazeY(position->Y, sourceRect->Height, tilesetTileHeight);
+		currentY = CalculateMazeY(enemySprite->position->Y, enemySprite->sourceRect->Height, tilesetTileHeight);
 
 		//if we have moved past the target tile, just consider it reached so that we don't get stuck
 		if (currentX >= newTileX && currentY == newTileY)
 			reachedNewTile = true;
 		break;
 	default:
-		currentX = CalculateMazeX(position->X, sourceRect->Width, tilesetTileWidth);
-		currentY = CalculateMazeY(position->Y, sourceRect->Height, tilesetTileHeight);
+		currentX = CalculateMazeX(enemySprite->position->X, enemySprite->sourceRect->Width, tilesetTileWidth);
+		currentY = CalculateMazeY(enemySprite->position->Y, enemySprite->sourceRect->Height, tilesetTileHeight);
 		break;
 	}
 }
@@ -587,7 +589,7 @@ void Enemy::GetCurrentPosition(int& currentX, int& currentY)
 void Enemy::CheckIfAtTargetTile(int currentX, int currentY)
 {
 	//if we have moved past the target tile, just consider it reached so that we don't get stuck
-	switch (currDirection)
+	switch (enemySprite->direction)
 	{
 	case UP:
 		if (currentX == newTileX && currentY <= newTileY)
@@ -622,9 +624,9 @@ void Enemy::ModeChangeTurnAround()
 	currMode = GetMode(totalElapsedTime);
 
 	//if there has been a mode change, turn around
-	if (oldMode != currMode && currDirection != NONE)
+	if (oldMode != currMode && enemySprite->direction != NONE)
 	{
-		currDirection = OppositeDirection(currDirection);
+		enemySprite->direction = OppositeDirection(enemySprite->direction);
 	}
 }
 
