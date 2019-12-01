@@ -57,12 +57,15 @@ private:
 	unsigned int totalElapsedTime = 0;
 
 	//Data for maze
-	mazeUnits(*maze)[_mazeHeight][_mazeWidth];
-	float tilesetTileWidth;
-	float tilesetTileHeight;
+	mazeUnits(*maze)[cMazeHeight][cMazeWidth];
 
+	//Data for random number generation
 	random_device rd;
 	mt19937 mt;
+
+	//Screenwrapping data
+	float leftLimit;
+	float rightLimit;
 
 	//Data for ghost state
 	bool turnedAroundWhenFrightened = false;
@@ -103,7 +106,7 @@ private:
 	void RunModeCode(int elapsedTime, int currentX, int currentY, int pacmanX, int pacmanY, direction pacmanDirection, Enemy* blinky);
 
 public:
-	Enemy(Texture2D* texture, Vector2* position, Rect* sourceRect, mazeUnits (*mazeInput)[_mazeHeight][_mazeWidth], int ghostNumber, float backgroundElementWidth, float backgroundElementHeight);
+	Enemy(Texture2D* texture, Vector2* position, Rect* sourceRect, mazeUnits (*mazeInput)[cMazeHeight][cMazeWidth], int ghostNumber, float leftScreenLimit, float rightScreenLimit);
 	~Enemy();
 	const Texture2D* GetTexturePointer();
 	const Vector2* GetVectorPointer();

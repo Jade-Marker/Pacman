@@ -46,6 +46,10 @@ private:
 	const int _cLevelStartDelay;
 	const int _cPoweredUpTime;
 
+	//Screenswrapping data
+	float leftLimit;
+	float rightLimit;
+
 	//Level data
 	int _pelletsCollected;
 	int _level;
@@ -74,7 +78,7 @@ private:
 	Rect* _mazeTileRect;
 	Vector2* _backgroundPos;
 	int _noPelletsAvailable;
-	mazeUnits _maze[_mazeHeight][_mazeWidth];
+	mazeUnits _maze[cMazeHeight][cMazeWidth];
 
 	//Functions
 	void Input(int elapsedTime, Input::KeyboardState* state);
@@ -82,10 +86,10 @@ private:
 	void CheckStart(Input::KeyboardState* state, Input::Keys startKey);
 	void UpdatePacman(int elapsedTime);
 	bool CollisionCheck(float pacmanX, float pacmanY, direction directionOfMovement);
-	void LoadMaze(mazeUnits (&maze)[_mazeHeight][_mazeWidth], const mazeUnits(&mazeToCopy)[_mazeHeight][_mazeWidth]);
-	int GetNoOfPellets(mazeUnits(&mazeToCheck)[_mazeHeight][_mazeWidth]);
+	void LoadMaze(mazeUnits (&maze)[cMazeHeight][cMazeWidth], const mazeUnits(&mazeToCopy)[cMazeHeight][cMazeWidth]);
+	int GetNoOfPellets(mazeUnits(&mazeToCheck)[cMazeHeight][cMazeWidth]);
 	void PelletCollisionCheck();
-	void ScreenWrapCheck(const float leftLimit, const float rightLimit);
+	void ScreenWrapCheck();
 	void LevelWinCheck();
 	void ResetLevel();
 	void ResetMaze();

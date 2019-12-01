@@ -1,6 +1,6 @@
 #include "Enemy.h"
 /// <summary> Constructs the Enemy class. </summary>
-Enemy::Enemy(Texture2D* textureInput, Vector2* positionInput, Rect* sourceRectInput, mazeUnits (*mazeInput)[_mazeHeight][_mazeWidth], int ghostNumber, float backgroundElementWidth, float backgroundElementHeight): _cSpeed(0.075f), _cFrameTime(500), _cTimeToLeaveHouse(700), _cEatenSpeedMultiplier(2.0f), _cFrightenedSpeedMultiplier(0.5f), _cHouseX(13), _cHouseY(14)
+Enemy::Enemy(Texture2D* textureInput, Vector2* positionInput, Rect* sourceRectInput, mazeUnits (*mazeInput)[cMazeHeight][cMazeWidth], int ghostNumber, float leftScreenLimit, float rightScreenLimit): _cSpeed(0.075f), _cFrameTime(500), _cTimeToLeaveHouse(700), _cEatenSpeedMultiplier(2.0f), _cFrightenedSpeedMultiplier(0.5f), _cHouseX(13), _cHouseY(14)
 {
 	enemySprite = new Sprite();
 
@@ -12,8 +12,8 @@ Enemy::Enemy(Texture2D* textureInput, Vector2* positionInput, Rect* sourceRectIn
 
 	ghost = static_cast<ghostType>(ghostNumber);
 
-	tilesetTileHeight = backgroundElementHeight;
-	tilesetTileWidth = backgroundElementWidth;
+	leftLimit = leftScreenLimit;
+	rightLimit = rightScreenLimit;
 
 	mt19937 initMT(rd());
 	mt = initMT;
@@ -59,8 +59,8 @@ const Rect* Enemy::GetRectPointer()
 
 void Enemy::Update(int elapsedTime, int level, direction pacmanDirection, float pacmanXPos, float pacmanYPos, Enemy* blinky, bool pacmanPoweredUp, bool& collidedWithPacman)
 {
-	int pacmanX = CalculateMazeX(pacmanXPos, enemySprite->sourceRect->Width, tilesetTileWidth);
-	int pacmanY = CalculateMazeY(pacmanYPos, enemySprite->sourceRect->Height, tilesetTileHeight);
+	int pacmanX = CalculateMazeX(pacmanXPos, enemySprite->sourceRect->Width, cTilesetTileWidth);
+	int pacmanY = CalculateMazeY(pacmanYPos, enemySprite->sourceRect->Height, cTilesetTileHeight);
 
 	int currentX;
 	int currentY;
@@ -228,8 +228,8 @@ void Enemy::Chase(int currentX, int currentY, int pacmanX, int pacmanY, directio
 	int vectorX, vectorY;
 
 	//blinky x&y calculated as the target tile for Inky is set based on blinkys target tile
-	blinkyX = CalculateMazeX(blinky->GetVectorPointer()->X, enemySprite->sourceRect->Width, tilesetTileWidth);
-	blinkyY = CalculateMazeY(blinky->GetVectorPointer()->Y, enemySprite->sourceRect->Width, tilesetTileHeight);
+	blinkyX = CalculateMazeX(blinky->GetVectorPointer()->X, enemySprite->sourceRect->Width, cTilesetTileWidth);
+	blinkyY = CalculateMazeY(blinky->GetVectorPointer()->Y, enemySprite->sourceRect->Width, cTilesetTileHeight);
 
 	//set target tile based on type of ghost
 	switch (ghost)
@@ -305,7 +305,7 @@ void Enemy::Chase(int currentX, int currentY, int pacmanX, int pacmanY, directio
 		if (distSquared <= 8 * 8)
 		{
 			targetX = 0;
-			targetY = _mazeHeight;
+			targetY = cMazeHeight;
 		}
 		else 
 		{
@@ -318,13 +318,13 @@ void Enemy::Chase(int currentX, int currentY, int pacmanX, int pacmanY, directio
 	//keep targetX and targetY inside of the maze
 	if (targetX < 0)
 		targetX = 0;
-	if (targetX >= _mazeWidth)
-		targetX = _mazeWidth - 1;
+	if (targetX >= cMazeWidth)
+		targetX = cMazeWidth - 1;
 
 	if (targetY < 0)
 		targetY = 0;
-	if (targetY >= _mazeHeight)
-		targetY = _mazeHeight - 1;
+	if (targetY >= cMazeHeight)
+		targetY = cMazeHeight - 1;
 }
 
 /// <summary> Sets the target tile for the ghost. As it is scatter, the target tile is a specific corner of the maze</summary>
@@ -335,7 +335,7 @@ void Enemy::Scatter(int currentX, int currentY, int pacmanX, int pacmanY)
 	switch (ghost)
 	{
 	case BLINKY:
-		targetX = _mazeWidth - 2;
+		targetX = cMazeWidth - 2;
 		targetY = 0;
 		break;
 
@@ -345,13 +345,13 @@ void Enemy::Scatter(int currentX, int currentY, int pacmanX, int pacmanY)
 		break;
 
 	case INKY:
-		targetX = _mazeWidth - 1;
-		targetY = _mazeHeight;
+		targetX = cMazeWidth - 1;
+		targetY = cMazeHeight;
 		break;
 
 	case CLYDE:
 		targetX = 0;
-		targetY = _mazeHeight;
+		targetY = cMazeHeight;
 		break;
 	};
 }
@@ -469,15 +469,15 @@ void Enemy::Move(int elapsedTime)
 /// <summary> Checks if the ghost has gone off the screen and wraps them back around if they have</summary>
 void Enemy::ScreenWrapCheck()
 {
-	if (enemySprite->position->X < Graphics::GetViewportWidth() / 2.0f - ((_mazeWidth + 4) * tilesetTileWidth) / 2.0f)
+	if (enemySprite->position->X < leftLimit)
 	{
-		enemySprite->position->X += (_mazeWidth + 1) * tilesetTileWidth;
-		newTileX = _mazeWidth;
+		enemySprite->position->X += (cMazeWidth + 1) * cTilesetTileWidth;
+		newTileX = cMazeWidth - 1;
 	}
 
-	if (enemySprite->position->X > Graphics::GetViewportWidth() / 2.0f + ((_mazeWidth + 1) * tilesetTileWidth) / 2.0f)
+	if (enemySprite->position->X > rightLimit)
 	{
-		enemySprite->position->X -= (_mazeWidth + 2) * tilesetTileWidth;
+		enemySprite->position->X -= (cMazeWidth + 2) * cTilesetTileWidth;
 		newTileX = 0;
 	}
 }
@@ -549,8 +549,8 @@ void Enemy::GetCurrentPosition(int& currentX, int& currentY)
 	switch (enemySprite->direction)
 	{
 	case UP:
-		currentX = CalculateMazeX(enemySprite->position->X, enemySprite->sourceRect->Width, tilesetTileWidth);
-		currentY = CalculateMazeY(enemySprite->position->Y + enemySprite->sourceRect->Height / 4.0f, enemySprite->sourceRect->Height, tilesetTileHeight);
+		currentX = CalculateMazeX(enemySprite->position->X, enemySprite->sourceRect->Width, cTilesetTileWidth);
+		currentY = CalculateMazeY(enemySprite->position->Y + enemySprite->sourceRect->Height / 4.0f, enemySprite->sourceRect->Height, cTilesetTileHeight);
 		//adds offset so that the position is the centre
 
 		if (currentX == newTileX && currentY <= newTileY)
@@ -558,8 +558,8 @@ void Enemy::GetCurrentPosition(int& currentX, int& currentY)
 		break;
 
 	case DOWN:
-		currentX = CalculateMazeX(enemySprite->position->X, enemySprite->sourceRect->Width, tilesetTileWidth);
-		currentY = CalculateMazeY(enemySprite->position->Y - enemySprite->sourceRect->Height / 4.0f, enemySprite->sourceRect->Height, tilesetTileHeight);
+		currentX = CalculateMazeX(enemySprite->position->X, enemySprite->sourceRect->Width, cTilesetTileWidth);
+		currentY = CalculateMazeY(enemySprite->position->Y - enemySprite->sourceRect->Height / 4.0f, enemySprite->sourceRect->Height, cTilesetTileHeight);
 		//subtracts offset so that the position is the centre
 
 		//if we have moved past the target tile, just consider it reached so that we don't get stuck
@@ -567,26 +567,26 @@ void Enemy::GetCurrentPosition(int& currentX, int& currentY)
 			reachedNewTile = true;
 		break;
 	case LEFT:
-		currentX = CalculateMazeX(enemySprite->position->X + enemySprite->sourceRect->Width / 4.0f, enemySprite->sourceRect->Width, tilesetTileWidth);
+		currentX = CalculateMazeX(enemySprite->position->X + enemySprite->sourceRect->Width / 4.0f, enemySprite->sourceRect->Width, cTilesetTileWidth);
 		//adds offset so that the position is the centre
-		currentY = CalculateMazeY(enemySprite->position->Y, enemySprite->sourceRect->Height, tilesetTileHeight);
+		currentY = CalculateMazeY(enemySprite->position->Y, enemySprite->sourceRect->Height, cTilesetTileHeight);
 
 		//if we have moved past the target tile, just consider it reached so that we don't get stuck
 		if (currentX <= newTileX && currentY == newTileY)
 			reachedNewTile = true;
 		break;
 	case RIGHT:
-		currentX = CalculateMazeX(enemySprite->position->X - enemySprite->sourceRect->Width / 4.0f, enemySprite->sourceRect->Width, tilesetTileWidth);
+		currentX = CalculateMazeX(enemySprite->position->X - enemySprite->sourceRect->Width / 4.0f, enemySprite->sourceRect->Width, cTilesetTileWidth);
 		//subtracts offset so that the position is the centre
-		currentY = CalculateMazeY(enemySprite->position->Y, enemySprite->sourceRect->Height, tilesetTileHeight);
+		currentY = CalculateMazeY(enemySprite->position->Y, enemySprite->sourceRect->Height, cTilesetTileHeight);
 
 		//if we have moved past the target tile, just consider it reached so that we don't get stuck
 		if (currentX >= newTileX && currentY == newTileY)
 			reachedNewTile = true;
 		break;
 	default:
-		currentX = CalculateMazeX(enemySprite->position->X, enemySprite->sourceRect->Width, tilesetTileWidth);
-		currentY = CalculateMazeY(enemySprite->position->Y, enemySprite->sourceRect->Height, tilesetTileHeight);
+		currentX = CalculateMazeX(enemySprite->position->X, enemySprite->sourceRect->Width, cTilesetTileWidth);
+		currentY = CalculateMazeY(enemySprite->position->Y, enemySprite->sourceRect->Height, cTilesetTileHeight);
 		break;
 	}
 }
