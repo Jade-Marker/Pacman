@@ -5,10 +5,6 @@
 //todo
 //https://gameinternals.com/understanding-pac-man-ghost-behavior
 
-//Get eating ghosts to add to the score
-
-//Finish destructor
-
 //move constants for left and right screen limit to another file so that it isn't repeated in pacman & enemy
 
 //Redraw sprites
@@ -66,8 +62,28 @@ Pacman::Pacman(int argc, char* argv[]) : Game(argc, argv), _cPacmanSpeed(0.1f), 
 
 Pacman::~Pacman()
 {
-	delete _pacman->playerSprite.texture;
+	delete _pacman->scoreOutputPos;
+	delete _pacman->playerSprite.position;
 	delete _pacman->playerSprite.sourceRect;
+	delete _pacman->playerSprite.texture;
+
+	delete _stringPosition;
+
+	delete _pauseMenu->texture;
+	delete _pauseMenu->rect;
+	delete _pauseMenu->stringPosition;
+	delete _pauseMenu;
+
+	delete _startMenu->texture;
+	delete _startMenu->rect;
+	delete _startMenu;
+
+	delete _overlay;
+	delete _overlayRect;
+
+	delete _mazeTileset;
+	delete _mazeTileRect;
+	delete _backgroundPos;
 }
 
 void Pacman::LoadContent()
@@ -97,6 +113,7 @@ void Pacman::LoadContent()
 	//Start Menu Parameters
 	_startMenu->texture = new Texture2D();
 	_startMenu->texture->Load("Textures/Start.png", false);
+	_startMenu->rect = new Rect(0.0f, 0.0f, Graphics::GetViewportWidth(), Graphics::GetViewportHeight());
 
 	//load overlay
 	_overlay = new Texture2D();
@@ -133,15 +150,16 @@ void Pacman::Update(int elapsedTime)
 					bool colidedWithGhost = false;
 					bool ghostInChaseOrScatter = false;
 
-					_enemies[i]->Update(elapsedTime, _level, _pacman->playerSprite.direction, _pacman->playerSprite.position->X, _pacman->playerSprite.position->Y, _enemies[0], _poweredUp, colidedWithGhost, ghostInChaseOrScatter);
+					_enemies[i]->Update(elapsedTime, _level, _pacman->playerSprite.direction, _pacman->playerSprite.position->X, _pacman->playerSprite.position->Y, _enemies[0], _poweredUp, colidedWithGhost);
+					ghostMode ghostMode = _enemies[i]->GetMode();
 					if (colidedWithGhost)
 					{
-						if (!ghostInChaseOrScatter)
+						if (ghostMode == FRIGHTENED)
 						{
 							_enemies[i]->GhostHasBeenEaten();
-							//_pacman->score += _cEnemyValue;
+							_pacman->score += _cEnemyValue;
 						}
-						else
+						else if (ghostMode != EATEN)
 						{
 							PacmanDeath();
 							break;
@@ -188,7 +206,7 @@ void Pacman::Draw(int elapsedTime)
 
 	if (_startMenu->inUse)
 	{
-		SpriteBatch::Draw(_startMenu->texture, _pauseMenu->rect, nullptr);
+		SpriteBatch::Draw(_startMenu->texture, _startMenu->rect, nullptr);
 	}
 	else {
 		for (int i = 0; i < _mazeHeight; i++)

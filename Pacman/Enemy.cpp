@@ -30,6 +30,15 @@ Enemy::Enemy(Texture2D* textureInput, Vector2* positionInput, Rect* sourceRectIn
 	}
 }
 
+/// <summary> Destroys the Enemy class. </summary>
+Enemy::~Enemy()
+{
+	delete enemySprite->texture;
+	delete enemySprite->position;
+	delete enemySprite->sourceRect;
+	delete enemySprite;
+}
+
 /// <summary> Returns a constant pointer to the texture, so that it can be accessed but not modified </summary>
 const Texture2D* Enemy::GetTexturePointer()
 {
@@ -48,7 +57,7 @@ const Rect* Enemy::GetRectPointer()
 	return enemySprite->sourceRect;
 }
 
-void Enemy::Update(int elapsedTime, int level, direction pacmanDirection, float pacmanXPos, float pacmanYPos, Enemy* blinky, bool pacmanPoweredUp, bool& collidedWithPacman, bool& inChaseOrScatterMode)
+void Enemy::Update(int elapsedTime, int level, direction pacmanDirection, float pacmanXPos, float pacmanYPos, Enemy* blinky, bool pacmanPoweredUp, bool& collidedWithPacman)
 {
 	int pacmanX = CalculateMazeX(pacmanXPos, enemySprite->sourceRect->Width, tilesetTileWidth);
 	int pacmanY = CalculateMazeY(pacmanYPos, enemySprite->sourceRect->Height, tilesetTileHeight);
@@ -58,7 +67,6 @@ void Enemy::Update(int elapsedTime, int level, direction pacmanDirection, float 
 
 	GetCurrentPosition(currentX, currentY);
 	CheckIfAtTargetTile(currentX, currentY);
-	inChaseOrScatterMode = (currMode == CHASE || currMode == SCATTER);
 
 	if (reachedNewTile) {
 		if (currMode != INHOUSE) {
@@ -80,7 +88,7 @@ void Enemy::Update(int elapsedTime, int level, direction pacmanDirection, float 
 			}
 		}
 
-		RunModeCode(elapsedTime,currentX, currentY, pacmanX, pacmanY, pacmanDirection, blinky, inChaseOrScatterMode);
+		RunModeCode(elapsedTime,currentX, currentY, pacmanX, pacmanY, pacmanDirection, blinky);
 
 		//then calculate the correct direction based on target tile
 		CalculateDirection(currentX, currentY);
@@ -105,6 +113,12 @@ void Enemy::Update(int elapsedTime, int level, direction pacmanDirection, float 
 void Enemy::GhostHasBeenEaten()
 {
 	currMode = EATEN;
+}
+
+/// <summary> Returns the current mode the ghost is in</summary>
+ghostMode Enemy::GetMode()
+{
+	return currMode;
 }
 
 /// <summary> Checks if the ghost can move in each of the 4 possible directions and sets the corresponding bool in the array</summary>
@@ -506,7 +520,7 @@ void Enemy::Animate(int elapsedTime)
 }
 
 /// <summary> Returns the mode the ghost should be in based on the time</summary>
-Enemy::ghostMode Enemy::GetMode(unsigned int totalElapsedTime)
+ghostMode Enemy::GetMode(unsigned int totalElapsedTime)
 {
 	//imitates what mode the ghost should be in based on: https://gameinternals.com/understanding-pac-man-ghost-behavior
 	//Only imitates for level 1
@@ -623,38 +637,33 @@ void Enemy::ModeChangeTurnAround()
 }
 
 /// <summary> Runs the function for the current mode</summary>
-void Enemy::RunModeCode(int elapsedTime, int currentX, int currentY, int pacmanX, int pacmanY, direction pacmanDirection, Enemy* blinky, bool& inChaseOrScatterMode)
+void Enemy::RunModeCode(int elapsedTime, int currentX, int currentY, int pacmanX, int pacmanY, direction pacmanDirection, Enemy* blinky)
 {
 	switch (currMode)
 	{
 	case CHASE:
 		totalElapsedTime += elapsedTime;
 		Chase(currentX, currentY, pacmanX, pacmanY, pacmanDirection, blinky);
-		inChaseOrScatterMode = true;
 		break;
 
 	case SCATTER:
 		totalElapsedTime += elapsedTime;
 		Scatter(currentX, currentY, pacmanX, pacmanY);
-		inChaseOrScatterMode = true;
 		break;
 
 	case EATEN:
 		totalElapsedTime += elapsedTime;
 		Eaten(currentX, currentY);
-		inChaseOrScatterMode = false;
 		break;
 
 	case FRIGHTENED:
 		//Don't add to totalElapsedTime here as totalElapsedTime is used to tell which ghost mode we should be in, and it isn't supposed to increment in frightened mode
 		Frightened(currentX, currentY);
-		inChaseOrScatterMode = false;
 		break;
 
 	case INHOUSE:
 		totalElapsedTime += elapsedTime;
 		InHouse(currentX, currentY);
-		inChaseOrScatterMode = false;
 		break;
 	}
 }

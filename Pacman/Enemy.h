@@ -46,10 +46,11 @@ using namespace S2D;
 
 //https://www.spriters-resource.com/arcade/pacman/sheet/52631/
 
+enum ghostMode { CHASE, SCATTER, EATEN, FRIGHTENED, INHOUSE };
+
 class Enemy
 {
 private:
-	enum ghostMode { CHASE, SCATTER, EATEN, FRIGHTENED, INHOUSE };
 	enum ghostType { BLINKY, PINKY, INKY, CLYDE };
 
 	Sprite* enemySprite;
@@ -99,13 +100,15 @@ private:
 	void GetCurrentPosition(int& currentX, int& currentY);
 	void CheckIfAtTargetTile(int currentX, int currentY);
 	void ModeChangeTurnAround();
-	void RunModeCode(int elapsedTime, int currentX, int currentY, int pacmanX, int pacmanY, direction pacmanDirection, Enemy* blinky, bool& inChaseOrScatterMode);
+	void RunModeCode(int elapsedTime, int currentX, int currentY, int pacmanX, int pacmanY, direction pacmanDirection, Enemy* blinky);
 
 public:
 	Enemy(Texture2D* texture, Vector2* position, Rect* sourceRect, mazeUnits (*mazeInput)[_mazeHeight][_mazeWidth], int ghostNumber, float backgroundElementWidth, float backgroundElementHeight);
+	~Enemy();
 	const Texture2D* GetTexturePointer();
 	const Vector2* GetVectorPointer();
 	const Rect* GetRectPointer();
-	void Update(int elapsedTime, int level, direction pacmanDirection, float pacmanXPos, float pacmanYPos, Enemy* blinky, bool pacmanPoweredUp, bool& collidedWithPacman, bool& inChaseOrScatterMode);
+	void Update(int elapsedTime, int level, direction pacmanDirection, float pacmanXPos, float pacmanYPos, Enemy* blinky, bool pacmanPoweredUp, bool& collidedWithPacman);
 	void GhostHasBeenEaten();
+	ghostMode GetMode();
 };
