@@ -5,8 +5,6 @@
 //todo
 //https://gameinternals.com/understanding-pac-man-ghost-behavior
 
-//Fix bug with enemy pathfinding at edges of screen
-
 //Redraw sprites
 
 //Music when starting level

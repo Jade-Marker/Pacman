@@ -88,7 +88,7 @@ void Enemy::Update(int elapsedTime, int level, direction pacmanDirection, float 
 			}
 		}
 
-		RunModeCode(elapsedTime,currentX, currentY, pacmanX, pacmanY, pacmanDirection, blinky);
+		RunModeCode(elapsedTime, currentX, currentY, pacmanX, pacmanY, pacmanDirection, blinky);
 
 		//then calculate the correct direction based on target tile
 		CalculateDirection(currentX, currentY);
@@ -127,6 +127,11 @@ void Enemy::CheckDirection(bool(&ableToMoveInDirections)[4], int currentX, int c
 	//For ableToMoveInDirections, bools represent the following directions:
 	//up, left, down, right
 	//Done this way so that if the distance in each direction is equal, priority is given to up, then left, etc.
+
+	if (currentX >= cMazeWidth)
+		currentX = cMazeWidth - 1;
+	if (currentX <= 0)
+		currentX = 0;
 
 	if (ableToLeaveHouse) {
 		if ((*maze)[currentY - 1][currentX] != PELLET && (*maze)[currentY - 1][currentX] != EMPTY && (*maze)[currentY - 1][currentX] != GHOST_ENTRANCE)
