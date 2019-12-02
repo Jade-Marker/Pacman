@@ -128,11 +128,6 @@ void Enemy::CheckDirection(bool(&ableToMoveInDirections)[4], int currentX, int c
 	//up, left, down, right
 	//Done this way so that if the distance in each direction is equal, priority is given to up, then left, etc.
 
-	if (currentX >= cMazeWidth)
-		currentX = cMazeWidth - 1;
-	if (currentX <= 0)
-		currentX = 0;
-
 	if (ableToLeaveHouse) {
 		if ((*maze)[currentY - 1][currentX] != PELLET && (*maze)[currentY - 1][currentX] != EMPTY && (*maze)[currentY - 1][currentX] != GHOST_ENTRANCE)
 			ableToMoveInDirections[0] = false;
@@ -594,6 +589,16 @@ void Enemy::GetCurrentPosition(int& currentX, int& currentY)
 		currentY = CalculateMazeY(enemySprite->position->Y, enemySprite->sourceRect->Height, cTilesetTileHeight);
 		break;
 	}
+
+	if (currentX >= cMazeWidth)
+		currentX = cMazeWidth - 1;
+	if (currentX <= 0)
+		currentX = 0;
+
+	if (currentY >= cMazeHeight)
+		currentY = cMazeHeight - 1;
+	if (currentY <= 0)
+		currentY = 0;
 }
 
 /// <summary> Checks if the ghost has reached or gone past the target tile</summary>

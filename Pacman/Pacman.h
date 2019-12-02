@@ -79,6 +79,8 @@ private:
 	Vector2* _backgroundPos;
 	int _noPelletsAvailable;
 	mazeUnits _maze[cMazeHeight][cMazeWidth];
+	Color* _backgroundColor;
+	Vector2* _backgroundColorVector;
 
 	//Functions
 	void Input(int elapsedTime, Input::KeyboardState* state);

@@ -5,7 +5,7 @@
 //todo
 //https://gameinternals.com/understanding-pac-man-ghost-behavior
 
-//Redraw sprites
+//Redraw ghosts
 
 //Music when starting level
 
@@ -84,6 +84,8 @@ Pacman::~Pacman()
 	delete _mazeTileset;
 	delete _mazeTileRect;
 	delete _backgroundPos;
+	delete _backgroundColor;
+	delete _backgroundColorVector;
 }
 
 void Pacman::LoadContent()
@@ -93,6 +95,14 @@ void Pacman::LoadContent()
 	_mazeTileset->Load("Textures/backgroundTiles.png", false);
 	_mazeTileRect = new Rect(0.0f, 0.0f, cTilesetTileWidth, cTilesetTileHeight);
 	_backgroundPos = new Vector2();
+
+	//setup background color for maze
+	_backgroundColor = new Color();
+	_backgroundColor->R = 208.0f / 255.0f;
+	_backgroundColor->B = 48.0f / 255.0f;
+	_backgroundColor->G = 52.0f / 255.0f;
+	_backgroundColor->A = 0.8f;
+	_backgroundColorVector = new Vector2(0, 0);
 
 	// Load Pacman
 	_pacman->playerSprite.texture = new Texture2D();
@@ -204,6 +214,8 @@ void Pacman::Draw(int elapsedTime)
 	stream << "  PowerTimer: " << _powerTimer;
 
 	SpriteBatch::BeginDraw(); // Starts Drawing
+
+	SpriteBatch::DrawRectangle(_backgroundColorVector, Graphics::GetViewportWidth(), Graphics::GetViewportHeight(), _backgroundColor);
 
 	if (_startMenu->inUse)
 	{
