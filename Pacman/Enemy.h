@@ -6,7 +6,6 @@
 #include "Sprite.h"
 #include <random>
 using namespace S2D;
-//due to differences in certain parts of the AI, maybe have this be a base class and each ghost type be inherited
 
 //video used: https://www.youtube.com/watch?v=ataGotQ7ir8
 
@@ -43,8 +42,6 @@ using namespace S2D;
 //Clyde (orange) target tile is the same as blinky if 8 or more tiles away from pacman else target is the same as in scatter mode
 
 //Ghosts cannot turn up near ghost house and near where pacman starts (see 13:25)
-
-//https://www.spriters-resource.com/arcade/pacman/sheet/52631/
 
 enum ghostMode { CHASE, SCATTER, EATEN, FRIGHTENED, INHOUSE };
 

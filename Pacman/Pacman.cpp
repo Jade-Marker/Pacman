@@ -5,8 +5,6 @@
 //todo
 //https://gameinternals.com/understanding-pac-man-ghost-behavior
 
-//Redraw ghosts
-
 //Music when starting level
 
 //SFX when eating pellet
