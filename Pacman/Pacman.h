@@ -82,6 +82,10 @@ private:
 	Color* _backgroundColor;
 	Vector2* _backgroundColorVector;
 
+	//Data for sound/music
+	SoundEffect* _intro;
+	SoundEffect* _munch;
+
 	//Functions
 	void Input(int elapsedTime, Input::KeyboardState* state);
 	void CheckPaused(Input::KeyboardState* state, Input::Keys pauseKey);

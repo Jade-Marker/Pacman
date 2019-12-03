@@ -5,10 +5,6 @@
 //todo
 //https://gameinternals.com/understanding-pac-man-ghost-behavior
 
-//Music when starting level
-
-//SFX when eating pellet
-
 //Power pellets need to be animated
 
 //Need to add cherries
@@ -18,11 +14,12 @@
 //Animation when dying
 
 //Start screen with buttons
-
 //Link to portfolio page about it with button on start screen
 //ShellExecute(0, 0, L"https://www.google.com", 0, 0, SW_SHOW);
 
-Pacman::Pacman(int argc, char* argv[]) : Game(argc, argv), _cPacmanSpeed(0.1f), _cPacmanPosOffset(20.0f), _cPacmanFrameTime(250), _cLevelEndDelay(1000), _cLevelStartDelay(2000), _cPoweredUpTime(7000), _cPelletValue(10), _cPowerPelletValue(20), _cEnemyValue(50)
+//Sound for when powered up
+
+Pacman::Pacman(int argc, char* argv[]) : Game(argc, argv), _cPacmanSpeed(0.1f), _cPacmanPosOffset(20.0f), _cPacmanFrameTime(250), _cLevelEndDelay(1000), _cLevelStartDelay(5000), _cPoweredUpTime(7000), _cPelletValue(10), _cPowerPelletValue(20), _cEnemyValue(50)
 {
 	_pacman = new Player();
 	_pacman->playerSprite.direction = RIGHT;
@@ -50,7 +47,11 @@ Pacman::Pacman(int argc, char* argv[]) : Game(argc, argv), _cPacmanSpeed(0.1f), 
 	LoadMaze(_maze, cMazeTemplate);
 	_noPelletsAvailable = GetNoOfPellets(_maze);
 
+	_intro = new SoundEffect();
+	_munch = new SoundEffect();
+
 	//Initialise important Game aspects
+	Audio::Initialise();
 	Graphics::Initialise(argc, argv, this, 1920, 1080, false, 25, 25, "Pacman", 60);
 	Input::Initialise();
 
@@ -84,6 +85,9 @@ Pacman::~Pacman()
 	delete _backgroundPos;
 	delete _backgroundColor;
 	delete _backgroundColorVector;
+
+	delete _intro;
+	delete _munch;
 }
 
 void Pacman::LoadContent()
@@ -132,6 +136,9 @@ void Pacman::LoadContent()
 	leftLimit = Graphics::GetViewportWidth() / 2.0f - ((cMazeWidth + 4) * cTilesetTileWidth) / 2.0f;
 	rightLimit = Graphics::GetViewportWidth() / 2.0f + ((cMazeWidth + 1) * cTilesetTileWidth) / 2.0f;
 	CreateAndInitGhosts();
+
+	_intro->Load("Music & SFX/Intro.wav");
+	_munch->Load("Music & SFX/Munch.wav");
 }
 
 void Pacman::Update(int elapsedTime)
@@ -325,6 +332,7 @@ void Pacman::CheckStart(Input::KeyboardState* state, Input::Keys startKey)
 		_startMenu->inUse = false;
 		_delayInMilli = _cLevelStartDelay;
 		_delay = true;
+		Audio::Play(_intro);
 	}
 }
 
@@ -419,6 +427,7 @@ void Pacman::PelletCollisionCheck()
 		_maze[CalculateMazeY(_pacman->playerSprite.position->Y, _pacman->playerSprite.sourceRect->Height, cTilesetTileHeight)][CalculateMazeX(_pacman->playerSprite.position->X, _pacman->playerSprite.sourceRect->Width, cTilesetTileWidth)] = EMPTY;
 		_pacman->score += _cPelletValue;
 		_pelletsCollected++;
+		Audio::Play(_munch);
 	}
 	else if (_maze[CalculateMazeY(_pacman->playerSprite.position->Y, _pacman->playerSprite.sourceRect->Height, cTilesetTileHeight)][CalculateMazeX(_pacman->playerSprite.position->X, _pacman->playerSprite.sourceRect->Width, cTilesetTileWidth)] == POWER_PELLET)
 	{
@@ -427,6 +436,7 @@ void Pacman::PelletCollisionCheck()
 		_pelletsCollected++;
 		_poweredUp = true;
 		_powerTimer = _cPoweredUpTime;
+		Audio::Play(_munch);
 	}
 }
 
