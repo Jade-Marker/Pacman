@@ -46,6 +46,11 @@ private:
 	const int _cLevelStartDelay;
 	const int _cPoweredUpTime;
 
+	//Data for pellet animation
+	const int _cPelletFrameTime;
+	int _currentPelletFrameTime;
+	int _pelletFrame;
+
 	//Screenswrapping data
 	float leftLimit;
 	float rightLimit;

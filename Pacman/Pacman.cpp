@@ -5,8 +5,6 @@
 //todo
 //https://gameinternals.com/understanding-pac-man-ghost-behavior
 
-//Power pellets need to be animated
-
 //Need to add cherries
 
 //Add lives
@@ -19,7 +17,7 @@
 
 //Sound for when powered up
 
-Pacman::Pacman(int argc, char* argv[]) : Game(argc, argv), _cPacmanSpeed(0.1f), _cPacmanPosOffset(20.0f), _cPacmanFrameTime(250), _cLevelEndDelay(1000), _cLevelStartDelay(5000), _cPoweredUpTime(7000), _cPelletValue(10), _cPowerPelletValue(20), _cEnemyValue(50)
+Pacman::Pacman(int argc, char* argv[]) : Game(argc, argv), _cPacmanSpeed(0.1f), _cPacmanPosOffset(20.0f), _cPacmanFrameTime(250), _cLevelEndDelay(1000), _cLevelStartDelay(5000), _cPoweredUpTime(7000), _cPelletValue(10), _cPowerPelletValue(20), _cEnemyValue(50), _cPelletFrameTime(500)
 {
 	_pacman = new Player();
 	_pacman->playerSprite.direction = RIGHT;
@@ -40,6 +38,9 @@ Pacman::Pacman(int argc, char* argv[]) : Game(argc, argv), _cPacmanSpeed(0.1f), 
 
 	_poweredUp = false;
 	_powerTimer = 0;
+
+	_currentPelletFrameTime = 0;
+	_pelletFrame = 0;
 
 	_level = 1;
 	_pelletsCollected = 0;
@@ -192,6 +193,14 @@ void Pacman::Update(int elapsedTime)
 					_powerTimer = 0;
 				}
 
+				_currentPelletFrameTime += elapsedTime;
+				if (_currentPelletFrameTime > _cPelletFrameTime)
+				{
+					_currentPelletFrameTime = 0;
+					_pelletFrame++;
+					if (_pelletFrame >= 2)
+						_pelletFrame = 0;
+				}
 			}
 			DelayCountdown(elapsedTime);
 		}
@@ -240,6 +249,10 @@ void Pacman::Draw(int elapsedTime)
 				case PELLET:
 					_mazeTileRect->X = cTilesetTileWidth * _maze[i][j];
 					_mazeTileRect->Y = 0.0f;
+					break;
+				case POWER_PELLET:
+					_mazeTileRect->X = cTilesetTileWidth * _maze[i][j];
+					_mazeTileRect->Y = cTilesetTileHeight * _pelletFrame;
 					break;
 				default:
 					_mazeTileRect->X = cTilesetTileWidth * _maze[i][j];
@@ -491,6 +504,8 @@ void Pacman::ResetLevel()
 	delete _enemies[3];
 
 	CreateAndInitGhosts();
+
+	Audio::Play(_intro);
 }
 
 /// <summary> Resets the maze</summary>
