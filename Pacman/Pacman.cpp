@@ -9,8 +9,6 @@
 
 //Animation when dying
 
-//Redraw cherries
-
 //Start screen with buttons
 //Link to portfolio page about it with button on start screen
 //ShellExecute(0, 0, L"https://www.google.com", 0, 0, SW_SHOW);
@@ -491,6 +489,8 @@ void Pacman::ResetLevel()
 	delete _enemies[1];
 	delete _enemies[2];
 	delete _enemies[3];
+
+	_maze[_cCherryY][_cCherryX] = EMPTY;
 
 	CreateAndInitGhosts();
 
