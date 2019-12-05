@@ -49,18 +49,18 @@ private:
 	const int _cDeathDelay;
 
 	//Data for pellet animation
-	const int _cPelletFrameTime;
 	int _currentPelletFrameTime;
 	int _pelletFrame;
+	const int _cPelletFrameTime;
 
 	//Data for cherry
 	bool _cherryGivenToPlayer;
+	int _currentCherryFrameTime;
+	int _cherryFrame;
 	const int _cCherryX;
 	const int _cCherryY;
 	const float _cProportionOfPelletsRequired;
 	const int _cCherryFrameTime;
-	int _currentCherryFrameTime;
-	int _cherryFrame;
 
 	//Screenswrapping data
 	float leftLimit;

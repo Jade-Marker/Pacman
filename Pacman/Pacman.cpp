@@ -1,8 +1,5 @@
 #include "Pacman.h"
-
 #include <sstream>
-
-//Fix bug where you can pause during the intro
 
 Pacman::Pacman(int argc, char* argv[]) : Game(argc, argv), _cPacmanSpeed(0.1f), _cPacmanPosOffset(20.0f), _cPacmanFrameTime(250), _cLevelEndDelay(1000), _cLevelStartDelay(5000), _cPoweredUpTime(7000), _cPelletValue(10), _cPowerPelletValue(20), _cEnemyValue(50), _cPelletFrameTime(500), _cCherryValue(100), _cCherryX(13), _cCherryY(17), _cProportionOfPelletsRequired(0.1f), _cDeathDelay(3000), _cCherryFrameTime(1000)
 {
@@ -314,7 +311,7 @@ void Pacman::Input(int elapsedTime, Input::KeyboardState* state)
 /// <summary> Checks if the player has pressed the pause key and then pauses or unpauses</summary>
 void Pacman::CheckPaused(Input::KeyboardState* state, Input::Keys pauseKey)
 {
-	if (state->IsKeyDown(pauseKey) && !_pauseMenu->keyDown)
+	if (state->IsKeyDown(pauseKey) && !_pauseMenu->keyDown && !_delay)
 	{
 		_pauseMenu->keyDown = true;
 		_pauseMenu->inUse = !_pauseMenu->inUse;
