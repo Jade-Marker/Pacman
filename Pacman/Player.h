@@ -9,5 +9,6 @@ struct Player
 	Sprite playerSprite;
 	int score;
 	int lives;
+	bool alive;
 	Vector2* scoreOutputPos;
 };

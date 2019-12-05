@@ -46,6 +46,7 @@ private:
 	const int _cLevelEndDelay;
 	const int _cLevelStartDelay;
 	const int _cPoweredUpTime;
+	const int _cDeathDelay;
 
 	//Data for pellet animation
 	const int _cPelletFrameTime;
@@ -102,7 +103,7 @@ private:
 	void Input(int elapsedTime, Input::KeyboardState* state);
 	void CheckPaused(Input::KeyboardState* state, Input::Keys pauseKey);
 	void CheckStart(Input::KeyboardState* state, Input::Keys startKey);
-	void UpdatePacman(int elapsedTime);
+	void UpdatePacman(int elapsedTime, int frameTime);
 	bool CollisionCheck(float pacmanX, float pacmanY, direction directionOfMovement);
 	void LoadMaze(mazeUnits (&maze)[cMazeHeight][cMazeWidth], const mazeUnits(&mazeToCopy)[cMazeHeight][cMazeWidth]);
 	int GetNoOfPellets(mazeUnits(&mazeToCheck)[cMazeHeight][cMazeWidth]);

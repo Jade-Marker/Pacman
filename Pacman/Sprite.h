@@ -11,6 +11,7 @@ struct Sprite
 	direction direction;
 	int frame;
 	int currentFrameTime;
+	int noOfFrames;
 
 	void Animate(int elapsedTime, int frameTime)
 	{
@@ -18,7 +19,7 @@ struct Sprite
 		if (currentFrameTime > frameTime)
 		{
 			frame++;
-			if (frame >= 2)
+			if (frame >= noOfFrames)
 				frame = 0;
 
 			currentFrameTime = 0;

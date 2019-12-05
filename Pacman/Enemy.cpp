@@ -8,6 +8,7 @@ Enemy::Enemy(Texture2D* textureInput, Vector2* positionInput, Rect* sourceRectIn
 	enemySprite->position = positionInput;
 	enemySprite->sourceRect = sourceRectInput;
 	enemySprite->direction = NONE;
+	enemySprite->noOfFrames = 2;
 	maze = mazeInput;
 
 	ghost = static_cast<ghostType>(ghostNumber);

@@ -5,8 +5,6 @@
 //todo
 //https://gameinternals.com/understanding-pac-man-ghost-behavior
 
-//Animation when dying
-
 //Highscores
 
 //Start screen with buttons
@@ -15,14 +13,16 @@
 
 //Sound for when powered up
 
-Pacman::Pacman(int argc, char* argv[]) : Game(argc, argv), _cPacmanSpeed(0.1f), _cPacmanPosOffset(20.0f), _cPacmanFrameTime(250), _cLevelEndDelay(1000), _cLevelStartDelay(5000), _cPoweredUpTime(7000), _cPelletValue(10), _cPowerPelletValue(20), _cEnemyValue(50), _cPelletFrameTime(500), _cCherryValue(100), _cCherryX(13), _cCherryY(17), _cProportionOfPelletsRequired(0.1f)
+Pacman::Pacman(int argc, char* argv[]) : Game(argc, argv), _cPacmanSpeed(0.1f), _cPacmanPosOffset(20.0f), _cPacmanFrameTime(250), _cLevelEndDelay(1000), _cLevelStartDelay(5000), _cPoweredUpTime(7000), _cPelletValue(10), _cPowerPelletValue(20), _cEnemyValue(50), _cPelletFrameTime(500), _cCherryValue(100), _cCherryX(13), _cCherryY(17), _cProportionOfPelletsRequired(0.1f), _cDeathDelay(3000)
 {
 	_pacman = new Player();
 	_pacman->playerSprite.direction = RIGHT;
 	_pacman->playerSprite.currentFrameTime = 0;
 	_pacman->playerSprite.frame = 0;
+	_pacman->playerSprite.noOfFrames = 2;
 	_pacman->score = 0;
 	_pacman->lives = 3;
+	_pacman->alive = true;
 
 	_pauseMenu = new Menu();
 	_pauseMenu->inUse = false;
@@ -156,18 +156,36 @@ void Pacman::Update(int elapsedTime)
 
 		if (!_pauseMenu->inUse) {
 			if (!_delay) {
-				Input(elapsedTime, keyboardState);
+				if (!_pacman->alive)
+				{
+					ResetLevel();
+					_delay = true;
+					_delayInMilli = _cLevelStartDelay;
+					_pacman->alive = true;
+				}
+				else {
+					Input(elapsedTime, keyboardState);
 
-				PelletCollisionCheck();
-				CherryGiveCheck();
-				LevelWinCheck();
+					PelletCollisionCheck();
+					CherryGiveCheck();
+					LevelWinCheck();
 
-				UpdatePacman(elapsedTime);
-				ScreenWrapCheck();
+					UpdatePacman(elapsedTime, _cPacmanFrameTime);
+					ScreenWrapCheck();
 
-				UpdateGhostAndCheckCollisions(elapsedTime);
+					UpdateGhostAndCheckCollisions(elapsedTime);
 
-				HandleTimers(elapsedTime);
+					HandleTimers(elapsedTime);
+				}
+			}
+			else if (!_pacman->alive)
+			{
+				_pacman->playerSprite.noOfFrames = 5;
+				UpdatePacman(elapsedTime, 3000 / 5);
+				//_pacman->playerSprite.Animate(elapsedTime, 3000 / 5);
+				//_pacman->playerSprite.sourceRect->X = _pacman->playerSprite.sourceRect->Width * 4-(_delayInMilli/_cDeathDelay % 5);
+				//_pacman->playerSprite.sourceRect->X = _pacman->playerSprite.sourceRect->Width * 4 * roundf(1.0f - _delayInMilli / _cDeathDelay);
+
 			}
 			DelayCountdown(elapsedTime);
 		}
@@ -194,6 +212,7 @@ void Pacman::Draw(int elapsedTime)
 	stream << "  PoweredUp: " << _poweredUp;
 	stream << "  PowerTimer: " << _powerTimer;
 	stream << "  Lives: " << _pacman->lives;
+	stream << "  Alive: " << _pacman->alive;
 
 	SpriteBatch::BeginDraw(); // Starts Drawing
 
@@ -318,9 +337,9 @@ void Pacman::CheckStart(Input::KeyboardState* state, Input::Keys startKey)
 }
 
 /// <summary> Update rect for pacman based on frame and direction </summary>
-void Pacman::UpdatePacman(int elapsedTime)
+void Pacman::UpdatePacman(int elapsedTime, int frameTime)
 {
-	_pacman->playerSprite.Animate(elapsedTime, _cPacmanFrameTime);
+	_pacman->playerSprite.Animate(elapsedTime, frameTime);
 
 	_pacman->playerSprite.sourceRect->X = _pacman->playerSprite.sourceRect->Width * _pacman->playerSprite.frame;
 	_pacman->playerSprite.sourceRect->Y = _pacman->playerSprite.sourceRect->Height * _pacman->playerSprite.direction;
@@ -484,6 +503,9 @@ void Pacman::ResetLevel()
 	_pacman->playerSprite.position->X = Graphics::GetViewportWidth() / 2.0f - _pacman->playerSprite.sourceRect->Width / 2.0f;
 	_pacman->playerSprite.position->Y = 17 * cTilesetTileWidth - _pacman->playerSprite.sourceRect->Height / 4.0f;
 
+	_pacman->playerSprite.noOfFrames = 2;
+	_pacman->playerSprite.sourceRect->X = 0;
+
 	_poweredUp = false;
 	_powerTimer = 0;
 
@@ -553,13 +575,15 @@ void Pacman::CreateAndInitGhosts()
 /// <summary> Pacman has died, so reset the level (but not the maze) and start a delay </summary>
 void Pacman::PacmanDeath()
 {
-	//_pacman->lives--;
+	_pacman->alive = false;
 	_pacman->lives--;
 	if (_pacman->lives <= 0)
 		exit(0);
-	ResetLevel();
+	//ResetLevel();
+	//_delay = true;
+	//_delayInMilli = _cLevelStartDelay;
 	_delay = true;
-	_delayInMilli = _cLevelStartDelay;
+	_delayInMilli = _cDeathDelay;
 }
 
 /// <summary> Updates the ghosts and checks for collisions with ghosts </summary>
