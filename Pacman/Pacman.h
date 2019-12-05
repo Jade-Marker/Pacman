@@ -79,9 +79,6 @@ private:
 	bool _poweredUp;
 	int _powerTimer;
 
-	// Position for String output
-	Vector2* _stringPosition;
-
 	Menu* _pauseMenu;
 	Menu* _startMenu;
 

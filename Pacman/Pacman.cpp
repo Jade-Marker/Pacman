@@ -2,17 +2,6 @@
 
 #include <sstream>
 
-//todo
-//https://gameinternals.com/understanding-pac-man-ghost-behavior
-
-//Highscores
-
-//Start screen with buttons
-//Link to portfolio page about it with button on start screen
-//ShellExecute(0, 0, L"https://www.google.com", 0, 0, SW_SHOW);
-
-//Sound for when powered up
-
 Pacman::Pacman(int argc, char* argv[]) : Game(argc, argv), _cPacmanSpeed(0.1f), _cPacmanPosOffset(20.0f), _cPacmanFrameTime(250), _cLevelEndDelay(1000), _cLevelStartDelay(5000), _cPoweredUpTime(7000), _cPelletValue(10), _cPowerPelletValue(20), _cEnemyValue(50), _cPelletFrameTime(500), _cCherryValue(100), _cCherryX(13), _cCherryY(17), _cProportionOfPelletsRequired(0.1f), _cDeathDelay(3000), _cCherryFrameTime(1000)
 {
 	_pacman = new Player();
@@ -67,11 +56,10 @@ Pacman::Pacman(int argc, char* argv[]) : Game(argc, argv), _cPacmanSpeed(0.1f), 
 Pacman::~Pacman()
 {
 	delete _pacman->scoreOutputPos;
+	delete _pacman->livesOutputPos;
 	delete _pacman->playerSprite.position;
 	delete _pacman->playerSprite.sourceRect;
 	delete _pacman->playerSprite.texture;
-
-	delete _stringPosition;
 
 	delete _pauseMenu->texture;
 	delete _pauseMenu->rect;
@@ -117,9 +105,9 @@ void Pacman::LoadContent()
 	_pacman->playerSprite.sourceRect = new Rect(0.0f, 0.0f, 64, 64);
 	_pacman->playerSprite.position = new Vector2(Graphics::GetViewportWidth() / 2.0f - _pacman->playerSprite.sourceRect->Width / 2.0f, 17 * cTilesetTileWidth - _pacman->playerSprite.sourceRect->Height / 4.0f);
 
-	// Set string position
-	_stringPosition = new Vector2(10.0f, 25.0f);
-	_pacman->scoreOutputPos = new Vector2(10.0f, 45.0f);
+	// Set string output positions
+	_pacman->scoreOutputPos = new Vector2(10.0f, 25.0f);
+	_pacman->livesOutputPos = new Vector2(10.0f, 45.0f);
 
 	//Set Menu Parameters
 	_pauseMenu->texture = new Texture2D();
@@ -196,26 +184,16 @@ void Pacman::Update(int elapsedTime)
 
 void Pacman::Draw(int elapsedTime)
 {
-	std::stringstream stream;
 	int outputX, outputY;
+	std::stringstream scoreOutput;
+	std::stringstream livesOutput;
+	std::stringstream menuStream;
 
 	outputX = CalculateMazeX(_pacman->playerSprite.position->X, _pacman->playerSprite.sourceRect->Width, cTilesetTileWidth);
 	outputY = CalculateMazeY(_pacman->playerSprite.position->Y, _pacman->playerSprite.sourceRect->Height, cTilesetTileHeight);
 
-	//stream << "Currently on: " << _maze[outputY][outputX];
-	stream << "Pacman X: " << outputX << " Y: " << outputY;
-	//stream << "Pacman X: " << outputX << " Y: " << outputY << "Collision: " << CollisionCheck(_pacmanPosition->X, _pacmanPosition->Y);
-	//stream << "Pacman X: " << _pacman->playerSprite.position->X<< " Y: " << _pacman->playerSprite.position->Y;
-	//stream << "Pacman X: " << _pacmanPosition->X << " warp X: " << Graphics::GetViewportWidth() / 2.0f + (27 * 32) / 2.0f;
-	stream << "  Pellets available: " << _noPelletsAvailable << "  Pellets collected: " << _pelletsCollected;
-	stream << "  Level: " << _level;
-	stream << "  Delay: " << _delayInMilli;
-	stream << "  PoweredUp: " << _poweredUp;
-	stream << "  PowerTimer: " << _powerTimer;
-	stream << "  Lives: " << _pacman->lives;
-	stream << "  Alive: " << _pacman->alive;
 
-	SpriteBatch::BeginDraw(); // Starts Drawing
+	SpriteBatch::BeginDraw();
 
 	SpriteBatch::DrawRectangle(_backgroundColorVector, Graphics::GetViewportWidth(), Graphics::GetViewportHeight(), _backgroundColor);
 
@@ -229,7 +207,6 @@ void Pacman::Draw(int elapsedTime)
 			_backgroundPos->Y = cTilesetTileHeight * i;
 			for (int j = 0; j < cMazeWidth; j++)
 			{
-				//https://www.spriters-resource.com/arcade/pacman/sheet/73389/
 				_backgroundPos->X = cTilesetTileWidth * j + (Graphics::GetViewportWidth() / 2 - (cMazeWidth * cTilesetTileWidth) / 2);
 				_mazeTileRect->X = cTilesetTileWidth * _maze[i][j];
 				switch (_maze[i][j])
@@ -252,7 +229,6 @@ void Pacman::Draw(int elapsedTime)
 
 		SpriteBatch::Draw(_pacman->playerSprite.texture, _pacman->playerSprite.position, _pacman->playerSprite.sourceRect); // Draws Pacman
 
-		//Draw enemies
 		for (int i = 0; i < _enemyCount; i++)
 		{
 			SpriteBatch::Draw(_enemies[i]->GetTexturePointer(), _enemies[i]->GetVectorPointer(), _enemies[i]->GetRectPointer());
@@ -260,16 +236,15 @@ void Pacman::Draw(int elapsedTime)
 
 		SpriteBatch::Draw(_overlay, _overlayRect, nullptr);
 
-		// Draws String
-		SpriteBatch::DrawString(stream.str().c_str(), _stringPosition, Color::Black);
-
-		std::stringstream scoreOutput;
 		scoreOutput << "Score: " << _pacman->score;
 		SpriteBatch::DrawString(scoreOutput.str().c_str(),_pacman->scoreOutputPos, Color::Red);
 
+		livesOutput << "Lives: " << _pacman->lives;
+		SpriteBatch::DrawString(livesOutput.str().c_str(), _pacman->livesOutputPos, Color::Red);
+
+
 		if (_pauseMenu->inUse)
 		{
-			std::stringstream menuStream;
 			menuStream << "PAUSED!";
 
 			SpriteBatch::Draw(_pauseMenu->texture, _pauseMenu->rect, nullptr);

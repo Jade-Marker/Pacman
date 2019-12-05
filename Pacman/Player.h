@@ -11,4 +11,5 @@ struct Player
 	int lives;
 	bool alive;
 	Vector2* scoreOutputPos;
+	Vector2* livesOutputPos;
 };
