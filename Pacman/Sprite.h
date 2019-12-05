@@ -25,4 +25,17 @@ struct Sprite
 			currentFrameTime = 0;
 		}
 	}
+
+	static void Animate(int elapsedTime, int frameTime, int noOfFrames, int& currentFrame, int& currentFrameTimeInput)
+	{
+		currentFrameTimeInput += elapsedTime;
+		if (currentFrameTimeInput > frameTime)
+		{
+			currentFrame++;
+			if (currentFrame >= noOfFrames)
+				currentFrame = 0;
+
+			currentFrameTimeInput = 0;
+		}
+	}
 };

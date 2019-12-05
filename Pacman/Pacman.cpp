@@ -13,7 +13,7 @@
 
 //Sound for when powered up
 
-Pacman::Pacman(int argc, char* argv[]) : Game(argc, argv), _cPacmanSpeed(0.1f), _cPacmanPosOffset(20.0f), _cPacmanFrameTime(250), _cLevelEndDelay(1000), _cLevelStartDelay(5000), _cPoweredUpTime(7000), _cPelletValue(10), _cPowerPelletValue(20), _cEnemyValue(50), _cPelletFrameTime(500), _cCherryValue(100), _cCherryX(13), _cCherryY(17), _cProportionOfPelletsRequired(0.1f), _cDeathDelay(3000)
+Pacman::Pacman(int argc, char* argv[]) : Game(argc, argv), _cPacmanSpeed(0.1f), _cPacmanPosOffset(20.0f), _cPacmanFrameTime(250), _cLevelEndDelay(1000), _cLevelStartDelay(5000), _cPoweredUpTime(7000), _cPelletValue(10), _cPowerPelletValue(20), _cEnemyValue(50), _cPelletFrameTime(500), _cCherryValue(100), _cCherryX(13), _cCherryY(17), _cProportionOfPelletsRequired(0.1f), _cDeathDelay(3000), _cCherryFrameTime(1000)
 {
 	_pacman = new Player();
 	_pacman->playerSprite.direction = RIGHT;
@@ -40,6 +40,9 @@ Pacman::Pacman(int argc, char* argv[]) : Game(argc, argv), _cPacmanSpeed(0.1f), 
 
 	_currentPelletFrameTime = 0;
 	_pelletFrame = 0;
+
+	_currentCherryFrameTime = 0;
+	_cherryFrame = 0;
 
 	_level = 1;
 	_pelletsCollected = 0;
@@ -175,16 +178,14 @@ void Pacman::Update(int elapsedTime)
 
 					UpdateGhostAndCheckCollisions(elapsedTime);
 
-					HandleTimers(elapsedTime);
+					HandlePowerTimer(elapsedTime);
+					UpdatePelletAndCherry(elapsedTime);
 				}
 			}
 			else if (!_pacman->alive)
 			{
 				_pacman->playerSprite.noOfFrames = 5;
-				UpdatePacman(elapsedTime, 3000 / 5);
-				//_pacman->playerSprite.Animate(elapsedTime, 3000 / 5);
-				//_pacman->playerSprite.sourceRect->X = _pacman->playerSprite.sourceRect->Width * 4-(_delayInMilli/_cDeathDelay % 5);
-				//_pacman->playerSprite.sourceRect->X = _pacman->playerSprite.sourceRect->Width * 4 * roundf(1.0f - _delayInMilli / _cDeathDelay);
+				UpdatePacman(elapsedTime, _cDeathDelay / 5);
 
 			}
 			DelayCountdown(elapsedTime);
@@ -230,19 +231,17 @@ void Pacman::Draw(int elapsedTime)
 			{
 				//https://www.spriters-resource.com/arcade/pacman/sheet/73389/
 				_backgroundPos->X = cTilesetTileWidth * j + (Graphics::GetViewportWidth() / 2 - (cMazeWidth * cTilesetTileWidth) / 2);
+				_mazeTileRect->X = cTilesetTileWidth * _maze[i][j];
 				switch (_maze[i][j])
 				{
 				//have separate cases for tiles which need to be animated
-				case PELLET:
-					_mazeTileRect->X = cTilesetTileWidth * _maze[i][j];
-					_mazeTileRect->Y = 0.0f;
-					break;
 				case POWER_PELLET:
-					_mazeTileRect->X = cTilesetTileWidth * _maze[i][j];
 					_mazeTileRect->Y = cTilesetTileHeight * _pelletFrame;
 					break;
+				case CHERRY:
+					_mazeTileRect->Y = cTilesetTileHeight * _cherryFrame;
+					break;
 				default:
-					_mazeTileRect->X = cTilesetTileWidth * _maze[i][j];
 					_mazeTileRect->Y = 0.0f;
 					break;
 				}
@@ -612,8 +611,8 @@ void Pacman::UpdateGhostAndCheckCollisions(int elapsedTime)
 	}
 }
 
-/// <summary> Handles powerTimer and the timer for power pellet animation </summary>
-void Pacman::HandleTimers(int elapsedTime)
+/// <summary> Handles powerTimer </summary>
+void Pacman::HandlePowerTimer(int elapsedTime)
 {
 	_powerTimer -= elapsedTime;
 	if (_powerTimer <= 0)
@@ -621,13 +620,11 @@ void Pacman::HandleTimers(int elapsedTime)
 		_poweredUp = false;
 		_powerTimer = 0;
 	}
+}
 
-	_currentPelletFrameTime += elapsedTime;
-	if (_currentPelletFrameTime > _cPelletFrameTime)
-	{
-		_currentPelletFrameTime = 0;
-		_pelletFrame++;
-		if (_pelletFrame >= 2)
-			_pelletFrame = 0;
-	}
+void Pacman::UpdatePelletAndCherry(int elapsedTime)
+{
+	Sprite::Animate(elapsedTime, _cPelletFrameTime, 2, _pelletFrame, _currentPelletFrameTime);
+
+	Sprite::Animate(elapsedTime, _cCherryFrameTime, 2, _cherryFrame, _currentCherryFrameTime);
 }

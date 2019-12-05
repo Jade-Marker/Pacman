@@ -58,6 +58,9 @@ private:
 	const int _cCherryX;
 	const int _cCherryY;
 	const float _cProportionOfPelletsRequired;
+	const int _cCherryFrameTime;
+	int _currentCherryFrameTime;
+	int _cherryFrame;
 
 	//Screenswrapping data
 	float leftLimit;
@@ -117,7 +120,8 @@ private:
 	void CreateAndInitGhosts();
 	void PacmanDeath();
 	void UpdateGhostAndCheckCollisions(int elapsedTime);
-	void HandleTimers(int elapsedTime);
+	void HandlePowerTimer(int elapsedTime);
+	void UpdatePelletAndCherry(int elapsedTime);
 
 public:
 	/// <summary> Constructs the Pacman class. </summary>
