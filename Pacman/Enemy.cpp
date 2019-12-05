@@ -85,28 +85,20 @@ void Enemy::Update(int elapsedTime, int level, direction pacmanDirection, float 
 			else if (currMode != EATEN)
 			{
 				turnedAroundWhenFrightened = false;
-				ModeChangeTurnAround();
+				ModeChangeTurnAroundCheck();
 			}
 		}
 
 		RunModeCode(elapsedTime, currentX, currentY, pacmanX, pacmanY, pacmanDirection, blinky);
 
-		//then calculate the correct direction based on target tile
 		CalculateDirection(currentX, currentY);
 		ableToLeaveHouse = false;
 		reachedNewTile = false;
 	}
 
-	//direction is now set, so we want to move
 	Move(elapsedTime);
-
-	//Animate ghost
 	Animate(elapsedTime);
-
-	//check for screen wrapping
 	ScreenWrapCheck();
-
-	//now need to check if we've collided with pacman
 	collidedWithPacman = PacmanCollision(enemySprite->position->X, enemySprite->position->Y, pacmanXPos, pacmanYPos);
 }
 
@@ -163,7 +155,7 @@ void Enemy::CalculateDirection(int currentX, int currentY)
 	CheckDirection(ableToMoveInDir, currentX, currentY);
 
 	//up, left, down, right is the priority
-	//ghost can't move backwards, so each internal if has enemySprite->direction != opposite direction
+	//ghost can't move backwards, so each nested if statement has enemySprite->direction != opposite direction
 	//The ghosts use a greedy shortest path algorithm, so they look for the direction which gives the shortest distance
 	//distance is left as squared, as if the distance is smallest squared, it is also smallest when rooted
 
@@ -242,7 +234,7 @@ void Enemy::Chase(int currentX, int currentY, int pacmanX, int pacmanY, directio
 		break;
 
 	case PINKY:
-		//Pinky (pink) sets the target as 4 tiles ahead of pacman (based on direction pacman is facing) but when facing up is 4 tiles up and 4 tiles to the left
+		//Pinky (pink) sets the target as 4 tiles ahead of pacman (based on direction pacman is facing) but when facing up, the target tile is 4 tiles up and 4 tiles to the left
 		switch (pacmanDirection)
 		{
 		case UP:
@@ -430,20 +422,16 @@ void Enemy::InHouse(int currentX, int currentY)
 /// <summary> Moves the ghost</summary>
 void Enemy::Move(int elapsedTime)
 {
-	float moveAmount = 0;
+	float moveAmount = _cSpeed * elapsedTime;
 
 	switch (currMode)
 	{
 	case EATEN:
-		moveAmount = _cEatenSpeedMultiplier * _cSpeed * elapsedTime;
+		moveAmount *= _cEatenSpeedMultiplier;
 		break;
 
 	case FRIGHTENED:
-		moveAmount = _cFrightenedSpeedMultiplier * _cSpeed * elapsedTime;
-		break;
-
-	default:
-		moveAmount = _cSpeed * elapsedTime;
+		moveAmount *= _cFrightenedSpeedMultiplier;
 		break;
 	}
 
@@ -525,6 +513,7 @@ ghostMode Enemy::GetMode(unsigned int totalElapsedTime)
 {
 	//imitates what mode the ghost should be in based on: https://gameinternals.com/understanding-pac-man-ghost-behavior
 	//Only imitates for level 1
+	//Done this way as it does not map to a linear function
 	
 	if (totalElapsedTime <= 7 * 100)
 		return SCATTER;
@@ -614,17 +603,14 @@ void Enemy::CheckIfAtTargetTile(int currentX, int currentY)
 		break;
 
 	case DOWN:
-		//if we have moved past the target tile, just consider it reached so that we don't get stuck
 		if (currentX == newTileX && currentY >= newTileY)
 			reachedNewTile = true;
 		break;
 	case LEFT:
-		//if we have moved past the target tile, just consider it reached so that we don't get stuck
 		if (currentX <= newTileX && currentY == newTileY)
 			reachedNewTile = true;
 		break;
 	case RIGHT:
-		//if we have moved past the target tile, just consider it reached so that we don't get stuck
 		if (currentX >= newTileX && currentY == newTileY)
 			reachedNewTile = true;
 		break;
@@ -635,7 +621,7 @@ void Enemy::CheckIfAtTargetTile(int currentX, int currentY)
 }
 
 /// <summary> Checks if there has been a mode change and turns around if there has</summary>
-void Enemy::ModeChangeTurnAround()
+void Enemy::ModeChangeTurnAroundCheck()
 {
 	ghostMode oldMode = currMode;
 	currMode = GetMode(totalElapsedTime);

@@ -7,42 +7,6 @@
 #include <random>
 using namespace S2D;
 
-//video used: https://www.youtube.com/watch?v=ataGotQ7ir8
-
-//4 behaviour states
-//scatter, chase, frightened and eaten
-//alternate between scatter and chase (table showing times is at 1:11 in video)
-//Blinky (red) can act as in chase when in scatter if the dots remaining is below a threshold (table seen at 1:55)
-
-//For pathfinding, can't move backwards
-//Also can't move into solid tile (duh)
-//Of remaining options, one closest to target is chosen
-//If tiles are same distance, then the priority is up, left, down then right
-
-//In scatter mode, each ghost targets a specific corner of the maze
-
-//Frightened mode
-//All ghosts enter frightened mode when pacman eats a power pellet on levels 1-16 & 18
-//When pacman touches them in this mode, the player gains points and the ghosts go back to the ghost house
-//All ghosts will also turn 180
-//Instead of looking for the shortest path, they randomly choose a direction
-
-//Eaten mode
-//Ghost turns into eyeballs and heads back to the ghost house
-//Done by setting target tile to directly infront of gate
-//Once they reach it, they go inside and revert to scatter or chase mode
-
-//Chase mode
-//All ghosts turn 180
-//Also turn when leaving chase and going into scatter
-//In chase mode, target tile is calculated before choosing where to move
-//Blinky (red) sets the target as the tile pacman is located
-//Pinky (pink) sets the target as 4 tiles ahead of pacman (based on direction pacman is facing) but when facing up is 4 tiles up and 4 tiles to the left
-//Inky (blue) intermediate tile is found which is 2 tiles ahead of pacman (if up, 2 ahead and 2 to left) then vector from this to blinkys position is rotated 180 degrees, end point is target tile
-//Clyde (orange) target tile is the same as blinky if 8 or more tiles away from pacman else target is the same as in scatter mode
-
-//Ghosts cannot turn up near ghost house and near where pacman starts (see 13:25)
-
 enum ghostMode { CHASE, SCATTER, EATEN, FRIGHTENED, INHOUSE };
 
 class Enemy
@@ -99,7 +63,7 @@ private:
 	ghostMode GetMode(unsigned int totalElapsedTime);
 	void GetCurrentPosition(int& currentX, int& currentY);
 	void CheckIfAtTargetTile(int currentX, int currentY);
-	void ModeChangeTurnAround();
+	void ModeChangeTurnAroundCheck();
 	void RunModeCode(int elapsedTime, int currentX, int currentY, int pacmanX, int pacmanY, direction pacmanDirection, Enemy* blinky);
 
 public:

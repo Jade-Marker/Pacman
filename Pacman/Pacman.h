@@ -8,7 +8,6 @@
 	#endif
 #endif
 
-// Just need to include main header file
 #include "S2D/S2D.h"
 #include "Maze.h"
 #include "Direction.h"
@@ -19,15 +18,15 @@
 // Reduces the amount of typing by including all classes in S2D namespace
 using namespace S2D;
 
+const int _cEnemyCount = 4;
+
 // Declares the Pacman class which inherits from the Game class.
 // This allows us to overload the Game class methods to help us
 // load content, draw and update our game.
-const int _enemyCount = 4;
-
 class Pacman : public Game
 {
 private:
-	Enemy* _enemies[_enemyCount];
+	Enemy* _enemies[_cEnemyCount];
 
 	Player* _pacman;
 
@@ -62,7 +61,7 @@ private:
 	const float _cProportionOfPelletsRequired;
 	const int _cCherryFrameTime;
 
-	//Screenswrapping data
+	//Screen wrapping data
 	float leftLimit;
 	float rightLimit;
 

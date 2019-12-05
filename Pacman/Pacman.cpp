@@ -143,17 +143,16 @@ void Pacman::LoadContent()
 	rightLimit = Graphics::GetViewportWidth() / 2.0f + ((cMazeWidth + 1) * cTilesetTileWidth) / 2.0f;
 	CreateAndInitGhosts();
 
+	//Load music/SFX
 	_intro->Load("Music & SFX/Intro.wav");
 	_munch->Load("Music & SFX/Munch.wav");
 }
 
 void Pacman::Update(int elapsedTime)
 {
-	// Gets the current state of the keyboard
 	Input::KeyboardState* keyboardState = Input::Keyboard::GetState();
 
 	CheckGameOver(keyboardState, _gameOverMenu->interactKey);
-
 	if (!_gameOverMenu->inUse)
 	{
 		CheckStart(keyboardState, _startMenu->interactKey);
@@ -203,13 +202,9 @@ void Pacman::Update(int elapsedTime)
 
 void Pacman::Draw(int elapsedTime)
 {
-	int outputX, outputY;
 	std::stringstream scoreOutput;
 	std::stringstream livesOutput;
 	std::stringstream menuStream;
-
-	outputX = CalculateMazeX(_pacman->playerSprite.position->X, _pacman->playerSprite.sourceRect->Width, cTilesetTileWidth);
-	outputY = CalculateMazeY(_pacman->playerSprite.position->Y, _pacman->playerSprite.sourceRect->Height, cTilesetTileHeight);
 
 
 	SpriteBatch::BeginDraw();
@@ -250,9 +245,9 @@ void Pacman::Draw(int elapsedTime)
 			}
 		}
 
-		SpriteBatch::Draw(_pacman->playerSprite.texture, _pacman->playerSprite.position, _pacman->playerSprite.sourceRect); // Draws Pacman
+		SpriteBatch::Draw(_pacman->playerSprite.texture, _pacman->playerSprite.position, _pacman->playerSprite.sourceRect);
 
-		for (int i = 0; i < _enemyCount; i++)
+		for (int i = 0; i < _cEnemyCount; i++)
 		{
 			SpriteBatch::Draw(_enemies[i]->GetTexturePointer(), _enemies[i]->GetVectorPointer(), _enemies[i]->GetRectPointer());
 		}
@@ -274,7 +269,7 @@ void Pacman::Draw(int elapsedTime)
 			SpriteBatch::DrawString(menuStream.str().c_str(), _pauseMenu->stringPosition, Color::Red);
 		}
 	}
-	SpriteBatch::EndDraw(); // Ends Drawing
+	SpriteBatch::EndDraw();
 }
 
 /// <summary> Handles player input and moves pacman based on input </summary>
@@ -347,8 +342,6 @@ void Pacman::CheckGameOver(Input::KeyboardState* state, Input::Keys restartKey)
 		_pacman->score = 0;
 		_pacman->lives = 3;
 		_pacman->alive = true;
-		_pacman->playerSprite.sourceRect->X = 0;
-		_pacman->playerSprite.sourceRect->Y = 0;
 	}
 }
 
@@ -363,9 +356,7 @@ void Pacman::UpdatePacman(int elapsedTime, int frameTime)
 
 /// <summary> Returns true if Pacman is able to move </summary>
 bool Pacman::CollisionCheck(float pacmanX, float pacmanY, direction directionOfMovement)
-{
-	float collisionX, collisionY;
-	
+{	
 	int roundedX, roundedY;
 
 	switch (directionOfMovement)
@@ -517,21 +508,25 @@ void Pacman::ResetLevel()
 {
 	SetInitialPacmanPosition();
 
-	_pacman->playerSprite.noOfFrames = 2;
 	_pacman->playerSprite.sourceRect->X = 0;
+	_pacman->playerSprite.sourceRect->Y = 0;
 	_pacman->playerSprite.frame = 0;
+	_pacman->playerSprite.noOfFrames = 2;
+	_pacman->playerSprite.currentFrameTime = 0;
 
 	_poweredUp = false;
 	_powerTimer = 0;
 
-	delete _enemies[0];
-	delete _enemies[1];
-	delete _enemies[2];
-	delete _enemies[3];
+	for (int i = 0; i < _cEnemyCount; i++)
+	{
+		delete _enemies[0];
+		delete _enemies[1];
+		delete _enemies[2];
+		delete _enemies[3];
+	}
+	CreateAndInitGhosts();
 
 	_maze[_cCherryY][_cCherryX] = EMPTY;
-
-	CreateAndInitGhosts();
 
 	Audio::Play(_intro);
 }
@@ -591,9 +586,11 @@ void Pacman::CreateAndInitGhosts()
 void Pacman::PacmanDeath()
 {
 	_pacman->alive = false;
+
 	_pacman->lives--;
 	if (_pacman->lives <= 0)
 		_gameOverMenu->inUse = true;
+
 	_delay = true;
 	_delayInMilli = _cDeathDelay;
 }
@@ -601,10 +598,9 @@ void Pacman::PacmanDeath()
 /// <summary> Updates the ghosts and checks for collisions with ghosts </summary>
 void Pacman::UpdateGhostAndCheckCollisions(int elapsedTime)
 {
-	for (int i = 0; i < _enemyCount; i++)
+	for (int i = 0; i < _cEnemyCount; i++)
 	{
 		bool colidedWithGhost = false;
-		bool ghostInChaseOrScatter = false;
 
 		_enemies[i]->Update(elapsedTime, _level, _pacman->playerSprite.direction, _pacman->playerSprite.position->X, _pacman->playerSprite.position->Y, _enemies[0], _poweredUp, colidedWithGhost);
 		ghostMode ghostMode = _enemies[i]->GetMode();
