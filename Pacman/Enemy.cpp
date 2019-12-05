@@ -129,23 +129,23 @@ void Enemy::CheckDirection(bool(&ableToMoveInDirections)[4], int currentX, int c
 	//Done this way so that if the distance in each direction is equal, priority is given to up, then left, etc.
 
 	if (ableToLeaveHouse) {
-		if ((*maze)[currentY - 1][currentX] != PELLET && (*maze)[currentY - 1][currentX] != EMPTY && (*maze)[currentY - 1][currentX] != GHOST_ENTRANCE)
+		if ((*maze)[currentY - 1][currentX] != PELLET && (*maze)[currentY - 1][currentX] != EMPTY && (*maze)[currentY - 1][currentX] != POWER_PELLET && (*maze)[currentY - 1][currentX] != CHERRY && (*maze)[currentY - 1][currentX] != GHOST_ENTRANCE)
 			ableToMoveInDirections[0] = false;
-		if ((*maze)[currentY][currentX - 1] != PELLET && (*maze)[currentY][currentX - 1] != EMPTY && (*maze)[currentY][currentX - 1] != GHOST_ENTRANCE)
+		if ((*maze)[currentY][currentX - 1] != PELLET && (*maze)[currentY][currentX - 1] != EMPTY && (*maze)[currentY - 1][currentX] != POWER_PELLET && (*maze)[currentY - 1][currentX] != CHERRY && (*maze)[currentY][currentX - 1] != GHOST_ENTRANCE)
 			ableToMoveInDirections[1] = false;
-		if ((*maze)[currentY + 1][currentX] != PELLET && (*maze)[currentY + 1][currentX] != EMPTY && (*maze)[currentY + 1][currentX] != GHOST_ENTRANCE)
+		if ((*maze)[currentY + 1][currentX] != PELLET && (*maze)[currentY + 1][currentX] != EMPTY && (*maze)[currentY - 1][currentX] != POWER_PELLET && (*maze)[currentY - 1][currentX] != CHERRY && (*maze)[currentY + 1][currentX] != GHOST_ENTRANCE)
 			ableToMoveInDirections[2] = false;
-		if ((*maze)[currentY][currentX + 1] != PELLET && (*maze)[currentY][currentX + 1] != EMPTY && (*maze)[currentY][currentX + 1] != GHOST_ENTRANCE)
+		if ((*maze)[currentY][currentX + 1] != PELLET && (*maze)[currentY][currentX + 1] != EMPTY && (*maze)[currentY - 1][currentX] != POWER_PELLET && (*maze)[currentY - 1][currentX] != CHERRY && (*maze)[currentY][currentX + 1] != GHOST_ENTRANCE)
 			ableToMoveInDirections[3] = false;
 	}
 	else {
-		if ((*maze)[currentY - 1][currentX] != PELLET && (*maze)[currentY - 1][currentX] != EMPTY)
+		if ((*maze)[currentY - 1][currentX] != PELLET && (*maze)[currentY - 1][currentX] != EMPTY && (*maze)[currentY - 1][currentX] != POWER_PELLET && (*maze)[currentY - 1][currentX] != CHERRY)
 			ableToMoveInDirections[0] = false;
-		if ((*maze)[currentY][currentX - 1] != PELLET && (*maze)[currentY][currentX - 1] != EMPTY)
+		if ((*maze)[currentY][currentX - 1] != PELLET && (*maze)[currentY][currentX - 1] != EMPTY && (*maze)[currentY - 1][currentX] != POWER_PELLET && (*maze)[currentY - 1][currentX] != CHERRY)
 			ableToMoveInDirections[1] = false;
-		if ((*maze)[currentY + 1][currentX] != PELLET && (*maze)[currentY + 1][currentX] != EMPTY)
+		if ((*maze)[currentY + 1][currentX] != PELLET && (*maze)[currentY + 1][currentX] != EMPTY && (*maze)[currentY - 1][currentX] != POWER_PELLET && (*maze)[currentY - 1][currentX] != CHERRY)
 			ableToMoveInDirections[2] = false;
-		if ((*maze)[currentY][currentX + 1] != PELLET && (*maze)[currentY][currentX + 1] != EMPTY)
+		if ((*maze)[currentY][currentX + 1] != PELLET && (*maze)[currentY][currentX + 1] != EMPTY && (*maze)[currentY - 1][currentX] != POWER_PELLET && (*maze)[currentY - 1][currentX] != CHERRY)
 			ableToMoveInDirections[3] = false;
 	}
 }

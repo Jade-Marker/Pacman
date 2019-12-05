@@ -5,11 +5,15 @@
 //todo
 //https://gameinternals.com/understanding-pac-man-ghost-behavior
 
-//Need to add cherries
+//Clean up pellet collision check (calculate x and y first and then do a case statement for tile at that position
+
+//Clean up update function
 
 //Add lives
 
 //Animation when dying
+
+//Redraw cherries
 
 //Start screen with buttons
 //Link to portfolio page about it with button on start screen
@@ -17,7 +21,7 @@
 
 //Sound for when powered up
 
-Pacman::Pacman(int argc, char* argv[]) : Game(argc, argv), _cPacmanSpeed(0.1f), _cPacmanPosOffset(20.0f), _cPacmanFrameTime(250), _cLevelEndDelay(1000), _cLevelStartDelay(5000), _cPoweredUpTime(7000), _cPelletValue(10), _cPowerPelletValue(20), _cEnemyValue(50), _cPelletFrameTime(500)
+Pacman::Pacman(int argc, char* argv[]) : Game(argc, argv), _cPacmanSpeed(0.1f), _cPacmanPosOffset(20.0f), _cPacmanFrameTime(250), _cLevelEndDelay(1000), _cLevelStartDelay(5000), _cPoweredUpTime(7000), _cPelletValue(10), _cPowerPelletValue(20), _cEnemyValue(50), _cPelletFrameTime(500), _cCherryValue(100), _cCherryX(13), _cCherryY(17), _cProportionOfPelletsRequired(0.1f)
 {
 	_pacman = new Player();
 	_pacman->playerSprite.direction = RIGHT;
@@ -44,6 +48,8 @@ Pacman::Pacman(int argc, char* argv[]) : Game(argc, argv), _cPacmanSpeed(0.1f), 
 
 	_level = 1;
 	_pelletsCollected = 0;
+
+	_cherryGivenToPlayer = false;
 
 	LoadMaze(_maze, cMazeTemplate);
 	_noPelletsAvailable = GetNoOfPellets(_maze);
@@ -157,6 +163,8 @@ void Pacman::Update(int elapsedTime)
 			if (!_delay) {
 				Input(elapsedTime, keyboardState);
 				PelletCollisionCheck();
+				CherryGiveCheck();
+
 				LevelWinCheck();
 				UpdatePacman(elapsedTime);
 
@@ -275,7 +283,7 @@ void Pacman::Draw(int elapsedTime)
 		SpriteBatch::Draw(_overlay, _overlayRect, nullptr);
 
 		// Draws String
-		SpriteBatch::DrawString(stream.str().c_str(), _stringPosition, Color::Red);
+		SpriteBatch::DrawString(stream.str().c_str(), _stringPosition, Color::Black);
 
 		std::stringstream scoreOutput;
 		scoreOutput << "Score: " << _pacman->score;
@@ -403,7 +411,7 @@ bool Pacman::CollisionCheck(float pacmanX, float pacmanY, direction directionOfM
 	if (roundedX < 0)
 		roundedX = 0;
 
-	return (_maze[roundedY][roundedX] == EMPTY || _maze[roundedY][roundedX] == PELLET || _maze[roundedY][roundedX] == POWER_PELLET);
+	return (_maze[roundedY][roundedX] == EMPTY || _maze[roundedY][roundedX] == PELLET || _maze[roundedY][roundedX] == POWER_PELLET || _maze[roundedY][roundedX] == CHERRY);
 }
 
 ///<summary> Loads the maze from mazeToCopy into maze
@@ -432,7 +440,7 @@ int Pacman::GetNoOfPellets(mazeUnits(&mazeToCheck)[cMazeHeight][cMazeWidth])
 	return pellets;
 }
 
-/// <summary> Checks if the player is colliding with a pellet and increments score if they are </summary>
+/// <summary> Checks if the player is colliding with a pellet, power pellet or a cherry and increments score if they are </summary>
 void Pacman::PelletCollisionCheck()
 {
 	if (_maze[CalculateMazeY(_pacman->playerSprite.position->Y,_pacman->playerSprite.sourceRect->Height,cTilesetTileHeight)][CalculateMazeX(_pacman->playerSprite.position->X, _pacman->playerSprite.sourceRect->Width,cTilesetTileWidth)] == PELLET)
@@ -450,6 +458,22 @@ void Pacman::PelletCollisionCheck()
 		_poweredUp = true;
 		_powerTimer = _cPoweredUpTime;
 		Audio::Play(_munch);
+	}
+	else if (_maze[CalculateMazeY(_pacman->playerSprite.position->Y, _pacman->playerSprite.sourceRect->Height, cTilesetTileHeight)][CalculateMazeX(_pacman->playerSprite.position->X, _pacman->playerSprite.sourceRect->Width, cTilesetTileWidth)] == CHERRY)
+	{
+		_maze[CalculateMazeY(_pacman->playerSprite.position->Y, _pacman->playerSprite.sourceRect->Height, cTilesetTileHeight)][CalculateMazeX(_pacman->playerSprite.position->X, _pacman->playerSprite.sourceRect->Width, cTilesetTileWidth)] = EMPTY;
+		_pacman->score += _cCherryValue;
+		Audio::Play(_munch);
+	}
+}
+
+/// <summary> Places the cherry in the maze if the player hasn't already been given it and has collected enough pellets </summary>
+void Pacman::CherryGiveCheck()
+{
+	if (_pelletsCollected >= _cProportionOfPelletsRequired * _noPelletsAvailable && !_cherryGivenToPlayer)
+	{
+		_maze[_cCherryY][_cCherryX] = CHERRY;
+		_cherryGivenToPlayer = true;
 	}
 }
 
@@ -514,6 +538,7 @@ void Pacman::ResetMaze()
 	LoadMaze(_maze, cMazeTemplate);
 	_pelletsCollected = 0;
 	_noPelletsAvailable = GetNoOfPellets(_maze);
+	_cherryGivenToPlayer = false;
 }
 
 /// <summary> Decrements the delay counter if _delay is true and resets _delay when the counter reaches 0 </summary>

@@ -40,6 +40,7 @@ private:
 	const int _cPelletValue;
 	const int _cPowerPelletValue;
 	const int _cEnemyValue;
+	const int _cCherryValue;
 
 	//Time constants
 	const int _cLevelEndDelay;
@@ -50,6 +51,12 @@ private:
 	const int _cPelletFrameTime;
 	int _currentPelletFrameTime;
 	int _pelletFrame;
+
+	//Data for cherry
+	bool _cherryGivenToPlayer;
+	const int _cCherryX;
+	const int _cCherryY;
+	const float _cProportionOfPelletsRequired;
 
 	//Screenswrapping data
 	float leftLimit;
@@ -100,6 +107,7 @@ private:
 	void LoadMaze(mazeUnits (&maze)[cMazeHeight][cMazeWidth], const mazeUnits(&mazeToCopy)[cMazeHeight][cMazeWidth]);
 	int GetNoOfPellets(mazeUnits(&mazeToCheck)[cMazeHeight][cMazeWidth]);
 	void PelletCollisionCheck();
+	void CherryGiveCheck();
 	void ScreenWrapCheck();
 	void LevelWinCheck();
 	void ResetLevel();
