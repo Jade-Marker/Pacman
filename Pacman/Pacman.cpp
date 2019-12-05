@@ -173,7 +173,9 @@ void Pacman::Update(int elapsedTime)
 			else if (!_pacman->alive)
 			{
 				_pacman->playerSprite.noOfFrames = 5;
-				UpdatePacman(elapsedTime, _cDeathDelay / 5);
+				//+ _cDeathDelay/8 so that the animation doesn't fully play
+				//this means that the first frame doesn't appear before it should
+				UpdatePacman(elapsedTime, _cDeathDelay / 5 + _cDeathDelay/8);
 
 			}
 			DelayCountdown(elapsedTime);
