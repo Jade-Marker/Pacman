@@ -2,6 +2,8 @@
 
 #include <sstream>
 
+//Fix bug where you can pause during the intro
+
 Pacman::Pacman(int argc, char* argv[]) : Game(argc, argv), _cPacmanSpeed(0.1f), _cPacmanPosOffset(20.0f), _cPacmanFrameTime(250), _cLevelEndDelay(1000), _cLevelStartDelay(5000), _cPoweredUpTime(7000), _cPelletValue(10), _cPowerPelletValue(20), _cEnemyValue(50), _cPelletFrameTime(500), _cCherryValue(100), _cCherryX(13), _cCherryY(17), _cProportionOfPelletsRequired(0.1f), _cDeathDelay(3000), _cCherryFrameTime(1000)
 {
 	_pacman = new Player();
@@ -21,6 +23,10 @@ Pacman::Pacman(int argc, char* argv[]) : Game(argc, argv), _cPacmanSpeed(0.1f), 
 	_startMenu = new Menu();
 	_startMenu->inUse = true;
 	_startMenu->interactKey = Input::Keys::SPACE;
+
+	_gameOverMenu = new Menu();
+	_gameOverMenu->inUse = false;
+	_gameOverMenu->interactKey = Input::Keys::R;
 
 	_levelEnd = false;
 
@@ -70,6 +76,10 @@ Pacman::~Pacman()
 	delete _startMenu->rect;
 	delete _startMenu;
 
+	delete _gameOverMenu->texture;
+	delete _gameOverMenu->rect;
+	delete _gameOverMenu;
+
 	delete _overlay;
 	delete _overlayRect;
 
@@ -103,13 +113,14 @@ void Pacman::LoadContent()
 	_pacman->playerSprite.texture = new Texture2D();
 	_pacman->playerSprite.texture->Load("Textures/Pacman.png", false);
 	_pacman->playerSprite.sourceRect = new Rect(0.0f, 0.0f, 64, 64);
-	_pacman->playerSprite.position = new Vector2(Graphics::GetViewportWidth() / 2.0f - _pacman->playerSprite.sourceRect->Width / 2.0f, 17 * cTilesetTileWidth - _pacman->playerSprite.sourceRect->Height / 4.0f);
+	_pacman->playerSprite.position = new Vector2();
+	SetInitialPacmanPosition();
 
 	// Set string output positions
 	_pacman->scoreOutputPos = new Vector2(10.0f, 25.0f);
 	_pacman->livesOutputPos = new Vector2(10.0f, 45.0f);
 
-	//Set Menu Parameters
+	//Set Pause Menu Parameters
 	_pauseMenu->texture = new Texture2D();
 	_pauseMenu->texture->Load("Textures/Transparency.png", false);
 	_pauseMenu->rect = new Rect(0.0f, 0.0f, Graphics::GetViewportWidth(), Graphics::GetViewportHeight());
@@ -119,6 +130,11 @@ void Pacman::LoadContent()
 	_startMenu->texture = new Texture2D();
 	_startMenu->texture->Load("Textures/Start.png", false);
 	_startMenu->rect = new Rect(0.0f, 0.0f, Graphics::GetViewportWidth(), Graphics::GetViewportHeight());
+
+	//GameOver Menu Parameters
+	_gameOverMenu->texture = new Texture2D();
+	_gameOverMenu->texture->Load("Textures/GameOver.png", false);
+	_gameOverMenu->rect = new Rect(0.0f, 0.0f, Graphics::GetViewportWidth(), Graphics::GetViewportHeight());
 
 	//load overlay
 	_overlay = new Texture2D();
@@ -139,49 +155,53 @@ void Pacman::Update(int elapsedTime)
 	// Gets the current state of the keyboard
 	Input::KeyboardState* keyboardState = Input::Keyboard::GetState();
 
-	CheckStart(keyboardState, _startMenu->interactKey);
+	CheckGameOver(keyboardState, _gameOverMenu->interactKey);
 
-	if (!_startMenu->inUse)
+	if (!_gameOverMenu->inUse)
 	{
-		CheckPaused(keyboardState, _pauseMenu->interactKey);
+		CheckStart(keyboardState, _startMenu->interactKey);
 
-		if (!_pauseMenu->inUse) {
-			if (!_delay) {
-				if (!_pacman->alive)
+		if (!_startMenu->inUse)
+		{
+			CheckPaused(keyboardState, _pauseMenu->interactKey);
+
+			if (!_pauseMenu->inUse) {
+				if (!_delay) {
+					if (!_pacman->alive)
+					{
+						ResetLevel();
+						_delay = true;
+						_delayInMilli = _cLevelStartDelay;
+						_pacman->alive = true;
+					}
+					else {
+						Input(elapsedTime, keyboardState);
+
+						PelletCollisionCheck();
+						CherryGiveCheck();
+						LevelWinCheck();
+
+						UpdatePacman(elapsedTime, _cPacmanFrameTime);
+						ScreenWrapCheck();
+
+						UpdateGhostAndCheckCollisions(elapsedTime);
+
+						HandlePowerTimer(elapsedTime);
+						UpdatePelletAndCherry(elapsedTime);
+					}
+				}
+				else if (!_pacman->alive)
 				{
-					ResetLevel();
-					_delay = true;
-					_delayInMilli = _cLevelStartDelay;
-					_pacman->alive = true;
+					_pacman->playerSprite.noOfFrames = 5;
+					//+ _cDeathDelay/8 so that the animation doesn't fully play
+					//this means that the first frame doesn't appear before it should
+					UpdatePacman(elapsedTime, _cDeathDelay / 5 + _cDeathDelay / 8);
+
 				}
-				else {
-					Input(elapsedTime, keyboardState);
-
-					PelletCollisionCheck();
-					CherryGiveCheck();
-					LevelWinCheck();
-
-					UpdatePacman(elapsedTime, _cPacmanFrameTime);
-					ScreenWrapCheck();
-
-					UpdateGhostAndCheckCollisions(elapsedTime);
-
-					HandlePowerTimer(elapsedTime);
-					UpdatePelletAndCherry(elapsedTime);
-				}
+				DelayCountdown(elapsedTime);
 			}
-			else if (!_pacman->alive)
-			{
-				_pacman->playerSprite.noOfFrames = 5;
-				//+ _cDeathDelay/8 so that the animation doesn't fully play
-				//this means that the first frame doesn't appear before it should
-				UpdatePacman(elapsedTime, _cDeathDelay / 5 + _cDeathDelay/8);
-
-			}
-			DelayCountdown(elapsedTime);
 		}
 	}
-
 }
 
 void Pacman::Draw(int elapsedTime)
@@ -199,7 +219,11 @@ void Pacman::Draw(int elapsedTime)
 
 	SpriteBatch::DrawRectangle(_backgroundColorVector, Graphics::GetViewportWidth(), Graphics::GetViewportHeight(), _backgroundColor);
 
-	if (_startMenu->inUse)
+	if (_gameOverMenu->inUse)
+	{
+		SpriteBatch::Draw(_gameOverMenu->texture, _gameOverMenu->rect, nullptr);
+	}
+	else if (_startMenu->inUse)
 	{
 		SpriteBatch::Draw(_startMenu->texture, _startMenu->rect, nullptr);
 	}
@@ -309,6 +333,25 @@ void Pacman::CheckStart(Input::KeyboardState* state, Input::Keys startKey)
 		_delayInMilli = _cLevelStartDelay;
 		_delay = true;
 		Audio::Play(_intro);
+	}
+}
+
+/// <summary> Checks if the player has pressed the key to restart </summary>
+void Pacman::CheckGameOver(Input::KeyboardState* state, Input::Keys restartKey)
+{
+	if (state->IsKeyDown(restartKey) && _gameOverMenu->inUse)
+	{
+		_gameOverMenu->inUse = false;
+		ResetLevel();
+		ResetMaze();
+		_delay = true;
+		_delayInMilli = _cLevelStartDelay;
+		_level = 1;
+		_pacman->score = 0;
+		_pacman->lives = 3;
+		_pacman->alive = true;
+		_pacman->playerSprite.sourceRect->X = 0;
+		_pacman->playerSprite.sourceRect->Y = 0;
 	}
 }
 
@@ -463,7 +506,6 @@ void Pacman::LevelWinCheck()
 
 	if (_levelEnd && !_delay)
 	{
-		//should have a function for setting intial position
 		ResetLevel();
 		ResetMaze();
 		_level++;
@@ -476,11 +518,11 @@ void Pacman::LevelWinCheck()
 /// <summary> Resets pacman position, enemies and powerup timer</summary>
 void Pacman::ResetLevel()
 {
-	_pacman->playerSprite.position->X = Graphics::GetViewportWidth() / 2.0f - _pacman->playerSprite.sourceRect->Width / 2.0f;
-	_pacman->playerSprite.position->Y = 17 * cTilesetTileWidth - _pacman->playerSprite.sourceRect->Height / 4.0f;
+	SetInitialPacmanPosition();
 
 	_pacman->playerSprite.noOfFrames = 2;
 	_pacman->playerSprite.sourceRect->X = 0;
+	_pacman->playerSprite.frame = 0;
 
 	_poweredUp = false;
 	_powerTimer = 0;
@@ -554,10 +596,7 @@ void Pacman::PacmanDeath()
 	_pacman->alive = false;
 	_pacman->lives--;
 	if (_pacman->lives <= 0)
-		exit(0);
-	//ResetLevel();
-	//_delay = true;
-	//_delayInMilli = _cLevelStartDelay;
+		_gameOverMenu->inUse = true;
 	_delay = true;
 	_delayInMilli = _cDeathDelay;
 }
@@ -599,9 +638,17 @@ void Pacman::HandlePowerTimer(int elapsedTime)
 	}
 }
 
+/// <summary> Updates the frame values for the power pellets and for the cherry </summary>
 void Pacman::UpdatePelletAndCherry(int elapsedTime)
 {
 	Sprite::Animate(elapsedTime, _cPelletFrameTime, 2, _pelletFrame, _currentPelletFrameTime);
 
 	Sprite::Animate(elapsedTime, _cCherryFrameTime, 2, _cherryFrame, _currentCherryFrameTime);
+}
+
+/// <summary> Sets the inital xy position for pacman </summary>
+void Pacman::SetInitialPacmanPosition()
+{
+	_pacman->playerSprite.position->X = Graphics::GetViewportWidth() / 2.0f - _pacman->playerSprite.sourceRect->Width / 2.0f;
+	_pacman->playerSprite.position->Y = 17 * cTilesetTileWidth - _pacman->playerSprite.sourceRect->Height / 4.0f;
 }

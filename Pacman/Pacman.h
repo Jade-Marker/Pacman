@@ -81,6 +81,7 @@ private:
 
 	Menu* _pauseMenu;
 	Menu* _startMenu;
+	Menu* _gameOverMenu;
 
 	//Data for overlay
 	Texture2D* _overlay;
@@ -103,6 +104,7 @@ private:
 	void Input(int elapsedTime, Input::KeyboardState* state);
 	void CheckPaused(Input::KeyboardState* state, Input::Keys pauseKey);
 	void CheckStart(Input::KeyboardState* state, Input::Keys startKey);
+	void CheckGameOver(Input::KeyboardState* state, Input::Keys restartKey);
 	void UpdatePacman(int elapsedTime, int frameTime);
 	bool CollisionCheck(float pacmanX, float pacmanY, direction directionOfMovement);
 	void LoadMaze(mazeUnits (&maze)[cMazeHeight][cMazeWidth], const mazeUnits(&mazeToCopy)[cMazeHeight][cMazeWidth]);
@@ -119,6 +121,7 @@ private:
 	void UpdateGhostAndCheckCollisions(int elapsedTime);
 	void HandlePowerTimer(int elapsedTime);
 	void UpdatePelletAndCherry(int elapsedTime);
+	void SetInitialPacmanPosition();
 
 public:
 	/// <summary> Constructs the Pacman class. </summary>
