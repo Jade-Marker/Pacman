@@ -5,9 +5,9 @@
 //todo
 //https://gameinternals.com/understanding-pac-man-ghost-behavior
 
-//Add lives
-
 //Animation when dying
+
+//Highscores
 
 //Start screen with buttons
 //Link to portfolio page about it with button on start screen
@@ -22,6 +22,7 @@ Pacman::Pacman(int argc, char* argv[]) : Game(argc, argv), _cPacmanSpeed(0.1f), 
 	_pacman->playerSprite.currentFrameTime = 0;
 	_pacman->playerSprite.frame = 0;
 	_pacman->score = 0;
+	_pacman->lives = 3;
 
 	_pauseMenu = new Menu();
 	_pauseMenu->inUse = false;
@@ -192,6 +193,7 @@ void Pacman::Draw(int elapsedTime)
 	stream << "  Delay: " << _delayInMilli;
 	stream << "  PoweredUp: " << _poweredUp;
 	stream << "  PowerTimer: " << _powerTimer;
+	stream << "  Lives: " << _pacman->lives;
 
 	SpriteBatch::BeginDraw(); // Starts Drawing
 
@@ -551,6 +553,10 @@ void Pacman::CreateAndInitGhosts()
 /// <summary> Pacman has died, so reset the level (but not the maze) and start a delay </summary>
 void Pacman::PacmanDeath()
 {
+	//_pacman->lives--;
+	_pacman->lives--;
+	if (_pacman->lives <= 0)
+		exit(0);
 	ResetLevel();
 	_delay = true;
 	_delayInMilli = _cLevelStartDelay;

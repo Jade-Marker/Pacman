@@ -8,5 +8,6 @@ struct Player
 {
 	Sprite playerSprite;
 	int score;
+	int lives;
 	Vector2* scoreOutputPos;
 };
