@@ -5,10 +5,6 @@
 //todo
 //https://gameinternals.com/understanding-pac-man-ghost-behavior
 
-//Clean up pellet collision check (calculate x and y first and then do a case statement for tile at that position
-
-//Clean up update function
-
 //Add lives
 
 //Animation when dying
@@ -162,53 +158,17 @@ void Pacman::Update(int elapsedTime)
 		if (!_pauseMenu->inUse) {
 			if (!_delay) {
 				Input(elapsedTime, keyboardState);
+
 				PelletCollisionCheck();
 				CherryGiveCheck();
-
 				LevelWinCheck();
-				UpdatePacman(elapsedTime);
 
+				UpdatePacman(elapsedTime);
 				ScreenWrapCheck();
 
-				for (int i = 0; i < _enemyCount; i++)
-				{
-					bool colidedWithGhost = false;
-					bool ghostInChaseOrScatter = false;
+				UpdateGhostAndCheckCollisions(elapsedTime);
 
-					_enemies[i]->Update(elapsedTime, _level, _pacman->playerSprite.direction, _pacman->playerSprite.position->X, _pacman->playerSprite.position->Y, _enemies[0], _poweredUp, colidedWithGhost);
-					ghostMode ghostMode = _enemies[i]->GetMode();
-					if (colidedWithGhost)
-					{
-						if (ghostMode == FRIGHTENED)
-						{
-							_enemies[i]->GhostHasBeenEaten();
-							_pacman->score += _cEnemyValue;
-						}
-						else if (ghostMode != EATEN)
-						{
-							PacmanDeath();
-							break;
-						}
-					}
-
-
-				}
-
-				_powerTimer -= elapsedTime;
-				if (_powerTimer <= 0)
-				{
-					_poweredUp = false;
-					_powerTimer = 0;
-				}
-
-				_currentPelletFrameTime += elapsedTime;
-				if (_currentPelletFrameTime > _cPelletFrameTime)
-				{
-					_currentPelletFrameTime = 0;
-					_pelletFrame++;
-					if (_pelletFrame >= 2)
-						_pelletFrame = 0;
-				}
+				HandleTimers(elapsedTime);
 			}
 			DelayCountdown(elapsedTime);
 		}
@@ -443,27 +403,32 @@ int Pacman::GetNoOfPellets(mazeUnits(&mazeToCheck)[cMazeHeight][cMazeWidth])
 /// <summary> Checks if the player is colliding with a pellet, power pellet or a cherry and increments score if they are </summary>
 void Pacman::PelletCollisionCheck()
 {
-	if (_maze[CalculateMazeY(_pacman->playerSprite.position->Y,_pacman->playerSprite.sourceRect->Height,cTilesetTileHeight)][CalculateMazeX(_pacman->playerSprite.position->X, _pacman->playerSprite.sourceRect->Width,cTilesetTileWidth)] == PELLET)
+	int mazeX = CalculateMazeX(_pacman->playerSprite.position->X, _pacman->playerSprite.sourceRect->Width, cTilesetTileWidth);
+	int mazeY = CalculateMazeY(_pacman->playerSprite.position->Y, _pacman->playerSprite.sourceRect->Height, cTilesetTileHeight);
+
+	switch (_maze[mazeY][mazeX])
 	{
-		_maze[CalculateMazeY(_pacman->playerSprite.position->Y, _pacman->playerSprite.sourceRect->Height, cTilesetTileHeight)][CalculateMazeX(_pacman->playerSprite.position->X, _pacman->playerSprite.sourceRect->Width, cTilesetTileWidth)] = EMPTY;
+	case PELLET:
+		_maze[mazeY][mazeX] = EMPTY;
 		_pacman->score += _cPelletValue;
 		_pelletsCollected++;
 		Audio::Play(_munch);
-	}
-	else if (_maze[CalculateMazeY(_pacman->playerSprite.position->Y, _pacman->playerSprite.sourceRect->Height, cTilesetTileHeight)][CalculateMazeX(_pacman->playerSprite.position->X, _pacman->playerSprite.sourceRect->Width, cTilesetTileWidth)] == POWER_PELLET)
-	{
-		_maze[CalculateMazeY(_pacman->playerSprite.position->Y, _pacman->playerSprite.sourceRect->Height, cTilesetTileHeight)][CalculateMazeX(_pacman->playerSprite.position->X, _pacman->playerSprite.sourceRect->Width, cTilesetTileWidth)] = EMPTY;
+		break;
+
+	case POWER_PELLET:
+		_maze[mazeY][mazeX] = EMPTY;
 		_pacman->score += _cPowerPelletValue;
 		_pelletsCollected++;
 		_poweredUp = true;
 		_powerTimer = _cPoweredUpTime;
 		Audio::Play(_munch);
-	}
-	else if (_maze[CalculateMazeY(_pacman->playerSprite.position->Y, _pacman->playerSprite.sourceRect->Height, cTilesetTileHeight)][CalculateMazeX(_pacman->playerSprite.position->X, _pacman->playerSprite.sourceRect->Width, cTilesetTileWidth)] == CHERRY)
-	{
-		_maze[CalculateMazeY(_pacman->playerSprite.position->Y, _pacman->playerSprite.sourceRect->Height, cTilesetTileHeight)][CalculateMazeX(_pacman->playerSprite.position->X, _pacman->playerSprite.sourceRect->Width, cTilesetTileWidth)] = EMPTY;
+		break;
+
+	case CHERRY:
+		_maze[mazeY][mazeX] = EMPTY;
 		_pacman->score += _cCherryValue;
 		Audio::Play(_munch);
+		break;
 	}
 }
 
@@ -589,4 +554,50 @@ void Pacman::PacmanDeath()
 	ResetLevel();
 	_delay = true;
 	_delayInMilli = _cLevelStartDelay;
+}
+
+/// <summary> Updates the ghosts and checks for collisions with ghosts </summary>
+void Pacman::UpdateGhostAndCheckCollisions(int elapsedTime)
+{
+	for (int i = 0; i < _enemyCount; i++)
+	{
+		bool colidedWithGhost = false;
+		bool ghostInChaseOrScatter = false;
+
+		_enemies[i]->Update(elapsedTime, _level, _pacman->playerSprite.direction, _pacman->playerSprite.position->X, _pacman->playerSprite.position->Y, _enemies[0], _poweredUp, colidedWithGhost);
+		ghostMode ghostMode = _enemies[i]->GetMode();
+		if (colidedWithGhost)
+		{
+			if (ghostMode == FRIGHTENED)
+			{
+				_enemies[i]->GhostHasBeenEaten();
+				_pacman->score += _cEnemyValue;
+			}
+			else if (ghostMode != EATEN)
+			{
+				PacmanDeath();
+				break;
+			}
+		}
+	}
+}
+
+/// <summary> Handles powerTimer and the timer for power pellet animation </summary>
+void Pacman::HandleTimers(int elapsedTime)
+{
+	_powerTimer -= elapsedTime;
+	if (_powerTimer <= 0)
+	{
+		_poweredUp = false;
+		_powerTimer = 0;
+	}
+
+	_currentPelletFrameTime += elapsedTime;
+	if (_currentPelletFrameTime > _cPelletFrameTime)
+	{
+		_currentPelletFrameTime = 0;
+		_pelletFrame++;
+		if (_pelletFrame >= 2)
+			_pelletFrame = 0;
+	}
 }

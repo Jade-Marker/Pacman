@@ -115,6 +115,8 @@ private:
 	void DelayCountdown(int elapsedTime);
 	void CreateAndInitGhosts();
 	void PacmanDeath();
+	void UpdateGhostAndCheckCollisions(int elapsedTime);
+	void HandleTimers(int elapsedTime);
 
 public:
 	/// <summary> Constructs the Pacman class. </summary>
