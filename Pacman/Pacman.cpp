@@ -519,10 +519,7 @@ void Pacman::ResetLevel()
 
 	for (int i = 0; i < _cEnemyCount; i++)
 	{
-		delete _enemies[0];
-		delete _enemies[1];
-		delete _enemies[2];
-		delete _enemies[3];
+		delete _enemies[i];
 	}
 	CreateAndInitGhosts();
 
