@@ -438,7 +438,8 @@ void Pacman::PelletCollisionCheck()
 		_maze[mazeY][mazeX] = EMPTY;
 		_pacman->score += _cPelletValue;
 		_pelletsCollected++;
-		Audio::Play(_munch);
+		if (_munch->GetState() != SoundEffectState::PLAYING)
+			Audio::Play(_munch);
 		break;
 
 	case POWER_PELLET:
@@ -447,13 +448,15 @@ void Pacman::PelletCollisionCheck()
 		_pelletsCollected++;
 		_poweredUp = true;
 		_powerTimer = _cPoweredUpTime;
-		Audio::Play(_munch);
+		if (_munch->GetState() != SoundEffectState::PLAYING)
+			Audio::Play(_munch);
 		break;
 
 	case CHERRY:
 		_maze[mazeY][mazeX] = EMPTY;
 		_pacman->score += _cCherryValue;
-		Audio::Play(_munch);
+		if (_munch->GetState() != SoundEffectState::PLAYING)
+			Audio::Play(_munch);
 		break;
 	}
 }
@@ -607,6 +610,8 @@ void Pacman::UpdateGhostAndCheckCollisions(int elapsedTime)
 			{
 				_enemies[i]->GhostHasBeenEaten();
 				_pacman->score += _cEnemyValue;
+				if (_munch->GetState() != SoundEffectState::PLAYING)
+					Audio::Play(_munch);
 			}
 			else if (ghostMode != EATEN)
 			{
