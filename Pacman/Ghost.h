@@ -9,7 +9,7 @@ using namespace S2D;
 
 enum ghostMode { CHASE, SCATTER, EATEN, FRIGHTENED, INHOUSE };
 
-class Enemy
+class Ghost
 {
 private:
 	enum ghostType { BLINKY, PINKY, INKY, CLYDE };
@@ -32,7 +32,7 @@ private:
 	bool turnedAroundWhenFrightened = false;
 	bool ableToLeaveHouse = false;
 	ghostMode currMode = CHASE;
-	ghostType ghost;
+	ghostType currGhost;
 
 	//Data for pathfinding
 	bool reachedNewTile = true;
@@ -54,7 +54,7 @@ private:
 	void CheckDirection(bool(&ableToMoveInDirections)[4], int currentX, int currentY);
 	void CalculateDirection(int currentX, int currentY);
 	int DistanceSquared(int x1, int x2, int y1, int y2);
-	void Chase(int currentX, int currentY, int pacmanX, int pacmanY, direction pacmanDirection, Enemy* blinky);
+	void Chase(int currentX, int currentY, int pacmanX, int pacmanY, direction pacmanDirection, Ghost* blinky);
 	void Scatter(int currentX, int currentY, int pacmanX, int pacmanY);
 	void Eaten(int currentX, int currentY);
 	void Frightened(int currentX, int currentY);
@@ -67,15 +67,15 @@ private:
 	void GetCurrentPosition(int& currentX, int& currentY);
 	void CheckIfAtTargetTile(int currentX, int currentY);
 	void ModeChangeTurnAroundCheck();
-	void RunModeCode(int elapsedTime, int currentX, int currentY, int pacmanX, int pacmanY, direction pacmanDirection, Enemy* blinky);
+	void RunModeCode(int elapsedTime, int currentX, int currentY, int pacmanX, int pacmanY, direction pacmanDirection, Ghost* blinky);
 
 public:
-	Enemy(Texture2D* texture, Vector2* position, Rect* sourceRect, mazeUnits (*mazeInput)[cMazeHeight][cMazeWidth], int ghostNumber, float leftScreenLimit, float rightScreenLimit);
-	~Enemy();
+	Ghost(Texture2D* texture, Vector2* position, Rect* sourceRect, mazeUnits (*mazeInput)[cMazeHeight][cMazeWidth], int ghostNumber, float leftScreenLimit, float rightScreenLimit);
+	~Ghost();
 	const Texture2D* GetTexturePointer();
 	const Vector2* GetVectorPointer();
 	const Rect* GetRectPointer();
-	void Update(int elapsedTime, int level, direction pacmanDirection, float pacmanXPos, float pacmanYPos, Enemy* blinky, bool pacmanPoweredUp, bool& collidedWithPacman);
+	void Update(int elapsedTime, int level, direction pacmanDirection, float pacmanXPos, float pacmanYPos, Ghost* blinky, bool pacmanPoweredUp, bool& collidedWithPacman);
 	void GhostHasBeenEaten();
 	ghostMode GetMode();
 };

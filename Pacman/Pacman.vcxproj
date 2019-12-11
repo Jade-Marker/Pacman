@@ -85,14 +85,14 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Direction.cpp" />
-    <ClCompile Include="Enemy.cpp" />
+    <ClCompile Include="Ghost.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Maze.cpp" />
     <ClCompile Include="Pacman.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Direction.h" />
-    <ClInclude Include="Enemy.h" />
+    <ClInclude Include="Ghost.h" />
     <ClInclude Include="Maze.h" />
     <ClInclude Include="Menu.h" />
     <ClInclude Include="Pacman.h" />

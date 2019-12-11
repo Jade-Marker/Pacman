@@ -561,25 +561,25 @@ void Pacman::CreateAndInitGhosts()
 	blinkyTexture->Load("Textures/Blinky.png", false);
 	Rect* blinkyRect = new Rect(0.0f, 0.0f, 64, 64);
 	Vector2* blinkyPosition = new Vector2(Graphics::GetViewportWidth() / 2.0f - _pacman->playerSprite.sourceRect->Width / 2.0f, 11 * cTilesetTileWidth - _pacman->playerSprite.sourceRect->Height / 4.0f);
-	_enemies[0] = new Enemy(blinkyTexture, blinkyPosition, blinkyRect, &_maze, 0, leftLimit, rightLimit);
+	_enemies[0] = new Ghost(blinkyTexture, blinkyPosition, blinkyRect, &_maze, 0, leftLimit, rightLimit);
 
 	Texture2D* pinkyTexture = new Texture2D();
 	pinkyTexture->Load("Textures/Pinky.png", false);
 	Rect* pinkyRect = new Rect(0.0f, 0.0f, 64, 64);
 	Vector2* pinkyPosition = new Vector2(Graphics::GetViewportWidth() / 2.0f - _pacman->playerSprite.sourceRect->Width / 2.0f, 14 * cTilesetTileWidth - _pacman->playerSprite.sourceRect->Height / 4.0f);
-	_enemies[1] = new Enemy(pinkyTexture, pinkyPosition, pinkyRect, &_maze, 1, leftLimit, rightLimit);
+	_enemies[1] = new Ghost(pinkyTexture, pinkyPosition, pinkyRect, &_maze, 1, leftLimit, rightLimit);
 
 	Texture2D* inkyTexture = new Texture2D();
 	inkyTexture->Load("Textures/Inky.png", false);
 	Rect* inkyRect = new Rect(0.0f, 0.0f, 64, 64);
 	Vector2* inkyPos = new Vector2(Graphics::GetViewportWidth() / 2.0f - _pacman->playerSprite.sourceRect->Width / 2.0f, 14 * cTilesetTileWidth - _pacman->playerSprite.sourceRect->Height / 4.0f);
-	_enemies[2] = new Enemy(inkyTexture, inkyPos, inkyRect, &_maze, 2, leftLimit, rightLimit);
+	_enemies[2] = new Ghost(inkyTexture, inkyPos, inkyRect, &_maze, 2, leftLimit, rightLimit);
 
 	Texture2D* clydeTexture = new Texture2D();
 	clydeTexture->Load("Textures/Clyde.png", false);
 	Rect* clydeRect = new Rect(0.0f, 0.0f, 64, 64);
 	Vector2* clydePosition = new Vector2(Graphics::GetViewportWidth() / 2.0f - _pacman->playerSprite.sourceRect->Width / 2.0f, 14 * cTilesetTileWidth - _pacman->playerSprite.sourceRect->Height / 4.0f);
-	_enemies[3] = new Enemy(clydeTexture, clydePosition, clydeRect, &_maze, 3, leftLimit, rightLimit);
+	_enemies[3] = new Ghost(clydeTexture, clydePosition, clydeRect, &_maze, 3, leftLimit, rightLimit);
 }
 
 /// <summary> Pacman has died, so reset the level (but not the maze) and start a delay </summary>

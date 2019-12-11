@@ -1,6 +1,6 @@
-#include "Enemy.h"
+#include "Ghost.h"
 /// <summary> Constructs the Enemy class. </summary>
-Enemy::Enemy(Texture2D* textureInput, Vector2* positionInput, Rect* sourceRectInput, mazeUnits (*mazeInput)[cMazeHeight][cMazeWidth],
+Ghost::Ghost(Texture2D* textureInput, Vector2* positionInput, Rect* sourceRectInput, mazeUnits (*mazeInput)[cMazeHeight][cMazeWidth],
 	int ghostNumber, float leftScreenLimit, float rightScreenLimit): _cSpeed(0.075f), _cFrameTime(500), _cTimeToLeaveHouse(700),
 	_cEatenSpeedMultiplier(2.0f), _cFrightenedSpeedMultiplier(0.5f), _cHouseX(13), _cHouseY(14), _cModeShortTime(5*100), _cModeMediumTime(7*100), _cModeLongTime(20*100)
 {
@@ -13,7 +13,7 @@ Enemy::Enemy(Texture2D* textureInput, Vector2* positionInput, Rect* sourceRectIn
 	enemySprite->noOfFrames = 2;
 	maze = mazeInput;
 
-	ghost = static_cast<ghostType>(ghostNumber);
+	currGhost = static_cast<ghostType>(ghostNumber);
 
 	leftLimit = leftScreenLimit;
 	rightLimit = rightScreenLimit;
@@ -26,7 +26,7 @@ Enemy::Enemy(Texture2D* textureInput, Vector2* positionInput, Rect* sourceRectIn
 	enemySprite->currentFrameTime = dist(mt);
 	enemySprite->frame = dist(mt) % 2;
 
-	if (ghost != BLINKY)
+	if (currGhost != BLINKY)
 	{
 		currMode = INHOUSE;
 		ableToLeaveHouse = false;
@@ -34,7 +34,7 @@ Enemy::Enemy(Texture2D* textureInput, Vector2* positionInput, Rect* sourceRectIn
 }
 
 /// <summary> Destroys the Enemy class. </summary>
-Enemy::~Enemy()
+Ghost::~Ghost()
 {
 	delete enemySprite->texture;
 	delete enemySprite->position;
@@ -43,24 +43,24 @@ Enemy::~Enemy()
 }
 
 /// <summary> Returns a constant pointer to the texture, so that it can be accessed but not modified </summary>
-const Texture2D* Enemy::GetTexturePointer()
+const Texture2D* Ghost::GetTexturePointer()
 {
 	return enemySprite->texture;
 }
 
 /// <summary> Returns a constant pointer to the position, so that it can be accessed but not modified </summary>
-const Vector2* Enemy::GetVectorPointer()
+const Vector2* Ghost::GetVectorPointer()
 {
 	return enemySprite->position;
 }
 
 /// <summary> Returns a constant pointer to the rect, so that it can be accessed but not modified </summary>
-const Rect* Enemy::GetRectPointer()
+const Rect* Ghost::GetRectPointer()
 {
 	return enemySprite->sourceRect;
 }
 
-void Enemy::Update(int elapsedTime, int level, direction pacmanDirection, float pacmanXPos, float pacmanYPos, Enemy* blinky, bool pacmanPoweredUp, bool& collidedWithPacman)
+void Ghost::Update(int elapsedTime, int level, direction pacmanDirection, float pacmanXPos, float pacmanYPos, Ghost* blinky, bool pacmanPoweredUp, bool& collidedWithPacman)
 {
 	int pacmanX = CalculateMazeX(pacmanXPos, enemySprite->sourceRect->Width, cTilesetTileWidth);
 	int pacmanY = CalculateMazeY(pacmanYPos, enemySprite->sourceRect->Height, cTilesetTileHeight);
@@ -105,19 +105,19 @@ void Enemy::Update(int elapsedTime, int level, direction pacmanDirection, float 
 }
 
 /// <summary> Called by pacman to show that the ghost has been eaten</summary>
-void Enemy::GhostHasBeenEaten()
+void Ghost::GhostHasBeenEaten()
 {
 	currMode = EATEN;
 }
 
 /// <summary> Returns the current mode the ghost is in</summary>
-ghostMode Enemy::GetMode()
+ghostMode Ghost::GetMode()
 {
 	return currMode;
 }
 
 /// <summary> Checks if the ghost can move in each of the 4 possible directions and sets the corresponding bool in the array</summary>
-void Enemy::CheckDirection(bool(&ableToMoveInDirections)[4], int currentX, int currentY)
+void Ghost::CheckDirection(bool(&ableToMoveInDirections)[4], int currentX, int currentY)
 {
 	//For ableToMoveInDirections, bools represent the following directions:
 	//up, left, down, right
@@ -146,7 +146,7 @@ void Enemy::CheckDirection(bool(&ableToMoveInDirections)[4], int currentX, int c
 }
 
 /// <summary> Calculates which direction to move in </summary>
-void Enemy::CalculateDirection(int currentX, int currentY)
+void Ghost::CalculateDirection(int currentX, int currentY)
 {
 	//up, left, down, right
 	bool ableToMoveInDir[4] = { true,true,true,true };
@@ -209,13 +209,13 @@ void Enemy::CalculateDirection(int currentX, int currentY)
 }
 
 /// <summary> Calculates the squared distance between two points</summary>
-int Enemy::DistanceSquared(int x1, int x2, int y1, int y2)
+int Ghost::DistanceSquared(int x1, int x2, int y1, int y2)
 {
 	return ((x1 - x2) * (x1 - x2)) + ((y1 - y2) * (y1 - y2));
 }
 
 /// <summary> Sets the target tile for the ghost. As it is chase, the ghosts go for some tile relative to pacman </summary>
-void Enemy::Chase(int currentX, int currentY, int pacmanX, int pacmanY, direction pacmanDirection, Enemy* blinky)
+void Ghost::Chase(int currentX, int currentY, int pacmanX, int pacmanY, direction pacmanDirection, Ghost* blinky)
 {
 	int distSquared;
 	int intermediateX, intermediateY;
@@ -227,7 +227,7 @@ void Enemy::Chase(int currentX, int currentY, int pacmanX, int pacmanY, directio
 	blinkyY = CalculateMazeY(blinky->GetVectorPointer()->Y, enemySprite->sourceRect->Width, cTilesetTileHeight);
 
 	//set target tile based on type of ghost
-	switch (ghost)
+	switch (currGhost)
 	{
 	case BLINKY:
 		//Blinky (red) sets the target as the tile pacman is located
@@ -323,11 +323,11 @@ void Enemy::Chase(int currentX, int currentY, int pacmanX, int pacmanY, directio
 }
 
 /// <summary> Sets the target tile for the ghost. As it is scatter, the target tile is a specific corner of the maze</summary>
-void Enemy::Scatter(int currentX, int currentY, int pacmanX, int pacmanY)
+void Ghost::Scatter(int currentX, int currentY, int pacmanX, int pacmanY)
 {
 	//in scatter, each ghost sets it target tile to a specific corner
 
-	switch (ghost)
+	switch (currGhost)
 	{
 	case BLINKY:
 		targetX = cMazeWidth - 2;
@@ -352,7 +352,7 @@ void Enemy::Scatter(int currentX, int currentY, int pacmanX, int pacmanY)
 }
 
 /// <summary> Sets the target tile for the ghost. As it is eaten, target tile is inside the house</summary>
-void Enemy::Eaten(int currentX, int currentY)
+void Ghost::Eaten(int currentX, int currentY)
 {
 	//set target tile to inside the house, and set ableToLeaveHouse to true so that the ghost can get into the house
 	targetX = _cHouseX;
@@ -366,7 +366,7 @@ void Enemy::Eaten(int currentX, int currentY)
 }
 
 /// <summary> Sets the target tile for the ghost. As it is frightened, the target tile is a random valid adjecent tile</summary>
-void Enemy::Frightened(int currentX, int currentY)
+void Ghost::Frightened(int currentX, int currentY)
 {
 	//up, left, down, right
 	//Done this way so that if the distance in each direction is equal, priority is given to up, then left, etc.
@@ -407,13 +407,13 @@ void Enemy::Frightened(int currentX, int currentY)
 }
 
 /// <summary> Sets the target tile for the ghost. As it is inhouse, the target tile is outside of the house so the ghost will try and leave</summary>
-void Enemy::InHouse(int currentX, int currentY)
+void Ghost::InHouse(int currentX, int currentY)
 {
 	//set target tile to outside of the house, so the ghost will try and leave
 	targetX = _cHouseX;
 	targetY = _cHouseY - 3;
 
-	if (totalElapsedTime >= _cTimeToLeaveHouse * static_cast<int>(ghost)) {
+	if (totalElapsedTime >= _cTimeToLeaveHouse * static_cast<int>(currGhost)) {
 		ableToLeaveHouse = true;
 
 		if (currentX == targetX && currentY == targetY)
@@ -422,7 +422,7 @@ void Enemy::InHouse(int currentX, int currentY)
 }
 
 /// <summary> Moves the ghost</summary>
-void Enemy::Move(int elapsedTime)
+void Ghost::Move(int elapsedTime)
 {
 	float moveAmount = _cSpeed * elapsedTime;
 
@@ -458,7 +458,7 @@ void Enemy::Move(int elapsedTime)
 }
 
 /// <summary> Checks if the ghost has gone off the screen and wraps them back around if they have</summary>
-void Enemy::ScreenWrapCheck()
+void Ghost::ScreenWrapCheck()
 {
 	if (enemySprite->position->X < leftLimit)
 	{
@@ -474,7 +474,7 @@ void Enemy::ScreenWrapCheck()
 }
 
 /// <summary> Checks if the ghost has collided with pacman</summary>
-bool Enemy::PacmanCollision(float ghostX, float ghostY, float pacmanX, float pacmanY)
+bool Ghost::PacmanCollision(float ghostX, float ghostY, float pacmanX, float pacmanY)
 {
 	float collisionCentreX = ghostX + enemySprite->sourceRect->Width / 2.0f;
 	float collisionCentreY = ghostY + enemySprite->sourceRect->Height / 2.0f;
@@ -487,7 +487,7 @@ bool Enemy::PacmanCollision(float ghostX, float ghostY, float pacmanX, float pac
 }
 
 /// <summary> Animates the ghost</summary>
-void Enemy::Animate(int elapsedTime)
+void Ghost::Animate(int elapsedTime)
 {
 	enemySprite->Animate(elapsedTime, _cFrameTime);
 
@@ -511,7 +511,7 @@ void Enemy::Animate(int elapsedTime)
 }
 
 /// <summary> Returns the mode the ghost should be in based on the time</summary>
-ghostMode Enemy::GetMode(unsigned int totalElapsedTime)
+ghostMode Ghost::GetMode(unsigned int totalElapsedTime)
 {
 	//imitates what mode the ghost should be in based on: https://gameinternals.com/understanding-pac-man-ghost-behavior
 	//Only imitates for level 1
@@ -536,7 +536,7 @@ ghostMode Enemy::GetMode(unsigned int totalElapsedTime)
 }
 
 /// <summary> Returns the position the ghost has in the maze</summary>
-void Enemy::GetCurrentPosition(int& currentX, int& currentY)
+void Ghost::GetCurrentPosition(int& currentX, int& currentY)
 {
 	switch (enemySprite->direction)
 	{
@@ -594,7 +594,7 @@ void Enemy::GetCurrentPosition(int& currentX, int& currentY)
 }
 
 /// <summary> Checks if the ghost has reached or gone past the target tile</summary>
-void Enemy::CheckIfAtTargetTile(int currentX, int currentY)
+void Ghost::CheckIfAtTargetTile(int currentX, int currentY)
 {
 	//if we have moved past the target tile, just consider it reached so that we don't get stuck
 	switch (enemySprite->direction)
@@ -623,7 +623,7 @@ void Enemy::CheckIfAtTargetTile(int currentX, int currentY)
 }
 
 /// <summary> Checks if there has been a mode change and turns around if there has</summary>
-void Enemy::ModeChangeTurnAroundCheck()
+void Ghost::ModeChangeTurnAroundCheck()
 {
 	ghostMode oldMode = currMode;
 	currMode = GetMode(totalElapsedTime);
@@ -636,7 +636,7 @@ void Enemy::ModeChangeTurnAroundCheck()
 }
 
 /// <summary> Runs the function for the current mode</summary>
-void Enemy::RunModeCode(int elapsedTime, int currentX, int currentY, int pacmanX, int pacmanY, direction pacmanDirection, Enemy* blinky)
+void Ghost::RunModeCode(int elapsedTime, int currentX, int currentY, int pacmanX, int pacmanY, direction pacmanDirection, Ghost* blinky)
 {
 	switch (currMode)
 	{

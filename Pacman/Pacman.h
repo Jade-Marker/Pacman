@@ -11,7 +11,7 @@
 #include "S2D/S2D.h"
 #include "Maze.h"
 #include "Direction.h"
-#include "Enemy.h"
+#include "Ghost.h"
 #include "Player.h"
 #include "Menu.h"
 
@@ -26,7 +26,7 @@ const int _cEnemyCount = 4;
 class Pacman : public Game
 {
 private:
-	Enemy* _enemies[_cEnemyCount];
+	Ghost* _enemies[_cEnemyCount];
 
 	Player* _pacman;
 
