@@ -95,9 +95,15 @@ private:
 	Color* _backgroundColor;
 	Vector2* _backgroundColorVector;
 
+	//Data for RNG
+	random_device _rd;
+	mt19937 _mt;
+
 	//Data for sound/music
 	SoundEffect* _intro;
 	SoundEffect* _munch;
+	const float _cMunchPitchUpperLimit;
+	const float _cMunchPitchLowerLimit;
 
 	//Functions
 	void Input(int elapsedTime, Input::KeyboardState* state);

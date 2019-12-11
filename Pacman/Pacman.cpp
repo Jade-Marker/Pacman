@@ -1,8 +1,14 @@
 #include "Pacman.h"
 #include <sstream>
 
-Pacman::Pacman(int argc, char* argv[]) : Game(argc, argv), _cPacmanSpeed(0.1f), _cPacmanPosOffset(20.0f), _cPacmanFrameTime(250), _cLevelEndDelay(1000), _cLevelStartDelay(5000), _cPoweredUpTime(7000), _cPelletValue(10), _cPowerPelletValue(20), _cEnemyValue(50), _cPelletFrameTime(500), _cCherryValue(100), _cCherryX(13), _cCherryY(17), _cProportionOfPelletsRequired(0.1f), _cDeathDelay(3000), _cCherryFrameTime(1000)
+Pacman::Pacman(int argc, char* argv[]) : Game(argc, argv), _cPacmanSpeed(0.1f), _cPacmanPosOffset(20.0f), _cPacmanFrameTime(250),
+_cLevelEndDelay(1000), _cLevelStartDelay(5000), _cPoweredUpTime(7000), _cPelletValue(10), _cPowerPelletValue(20), _cEnemyValue(50),
+_cPelletFrameTime(500), _cCherryValue(100), _cCherryX(13), _cCherryY(17), _cProportionOfPelletsRequired(0.1f), _cDeathDelay(3000), _cCherryFrameTime(1000),
+_cMunchPitchUpperLimit(1.08f), _cMunchPitchLowerLimit(0.92f)
 {
+	mt19937 mt(_rd());
+	_mt = mt;
+
 	_pacman = new Player();
 	_pacman->playerSprite.direction = RIGHT;
 	_pacman->playerSprite.currentFrameTime = 0;
@@ -432,6 +438,8 @@ void Pacman::PelletCollisionCheck()
 	int mazeX = CalculateMazeX(_pacman->playerSprite.position->X, _pacman->playerSprite.sourceRect->Width, cTilesetTileWidth);
 	int mazeY = CalculateMazeY(_pacman->playerSprite.position->Y, _pacman->playerSprite.sourceRect->Height, cTilesetTileHeight);
 
+	uniform_real_distribution<float> floatDist(_cMunchPitchLowerLimit, _cMunchPitchUpperLimit);
+
 	switch (_maze[mazeY][mazeX])
 	{
 	case PELLET:
@@ -439,7 +447,10 @@ void Pacman::PelletCollisionCheck()
 		_pacman->score += _cPelletValue;
 		_pelletsCollected++;
 		if (_munch->GetState() != SoundEffectState::PLAYING)
+		{
+			_munch->SetPitch(floatDist(_mt));
 			Audio::Play(_munch);
+		}
 		break;
 
 	case POWER_PELLET:
@@ -449,14 +460,20 @@ void Pacman::PelletCollisionCheck()
 		_poweredUp = true;
 		_powerTimer = _cPoweredUpTime;
 		if (_munch->GetState() != SoundEffectState::PLAYING)
+		{
+			_munch->SetPitch(floatDist(_mt));
 			Audio::Play(_munch);
+		}
 		break;
 
 	case CHERRY:
 		_maze[mazeY][mazeX] = EMPTY;
 		_pacman->score += _cCherryValue;
 		if (_munch->GetState() != SoundEffectState::PLAYING)
+		{
+			_munch->SetPitch(floatDist(_mt));
 			Audio::Play(_munch);
+		}
 		break;
 	}
 }
