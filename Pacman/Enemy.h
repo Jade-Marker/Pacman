@@ -47,6 +47,9 @@ private:
 	const float _cFrightenedSpeedMultiplier;
 	const int _cHouseX;
 	const int _cHouseY;
+	const int _cModeShortTime;
+	const int _cModeMediumTime;
+	const int _cModeLongTime;
 
 	void CheckDirection(bool(&ableToMoveInDirections)[4], int currentX, int currentY);
 	void CalculateDirection(int currentX, int currentY);

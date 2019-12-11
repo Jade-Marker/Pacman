@@ -1,6 +1,8 @@
 #include "Enemy.h"
 /// <summary> Constructs the Enemy class. </summary>
-Enemy::Enemy(Texture2D* textureInput, Vector2* positionInput, Rect* sourceRectInput, mazeUnits (*mazeInput)[cMazeHeight][cMazeWidth], int ghostNumber, float leftScreenLimit, float rightScreenLimit): _cSpeed(0.075f), _cFrameTime(500), _cTimeToLeaveHouse(700), _cEatenSpeedMultiplier(2.0f), _cFrightenedSpeedMultiplier(0.5f), _cHouseX(13), _cHouseY(14)
+Enemy::Enemy(Texture2D* textureInput, Vector2* positionInput, Rect* sourceRectInput, mazeUnits (*mazeInput)[cMazeHeight][cMazeWidth],
+	int ghostNumber, float leftScreenLimit, float rightScreenLimit): _cSpeed(0.075f), _cFrameTime(500), _cTimeToLeaveHouse(700),
+	_cEatenSpeedMultiplier(2.0f), _cFrightenedSpeedMultiplier(0.5f), _cHouseX(13), _cHouseY(14), _cModeShortTime(5*100), _cModeMediumTime(7*100), _cModeLongTime(20*100)
 {
 	enemySprite = new Sprite();
 
@@ -515,19 +517,19 @@ ghostMode Enemy::GetMode(unsigned int totalElapsedTime)
 	//Only imitates for level 1
 	//Done this way as it does not map to a linear function
 	
-	if (totalElapsedTime <= 7 * 100)
+	if (totalElapsedTime <= _cModeMediumTime)
 		return SCATTER;
-	else if (totalElapsedTime <= 7 * 100 + 20 * 100)
+	else if (totalElapsedTime <= _cModeMediumTime + _cModeLongTime)
 		return CHASE;
-	else if (totalElapsedTime <= 7 * 100 + 20 * 100 + 7 * 100)
+	else if (totalElapsedTime <= _cModeMediumTime + _cModeLongTime + _cModeMediumTime)
 		return SCATTER;
-	else if (totalElapsedTime <= 7 * 100 + 20 * 100 + 7 * 100 + 20 * 100)
+	else if (totalElapsedTime <= _cModeMediumTime + _cModeLongTime + _cModeMediumTime + _cModeLongTime)
 		return CHASE;
-	else if (totalElapsedTime <= 7 * 100 + 20 * 100 + 7 * 100 + 20 * 100 + 5 * 100)
+	else if (totalElapsedTime <= _cModeMediumTime + _cModeLongTime + _cModeMediumTime + _cModeLongTime + _cModeShortTime)
 		return SCATTER;
-	else if (totalElapsedTime <= 7 * 100 + 20 * 100 + 7 * 100 + 20 * 100 + 5 * 100 + 20 * 100)
+	else if (totalElapsedTime <= _cModeMediumTime + _cModeLongTime + _cModeMediumTime + _cModeLongTime + _cModeShortTime + _cModeLongTime)
 		return CHASE;
-	else if (totalElapsedTime <= 7 * 100 + 20 * 100 + 7 * 100 + 20 * 100 + 5 * 100 + 20 * 100 + 5 * 100)
+	else if (totalElapsedTime <= _cModeMediumTime + _cModeLongTime + _cModeMediumTime + _cModeLongTime + _cModeShortTime + _cModeLongTime + _cModeShortTime)
 		return SCATTER;
 	else
 		return CHASE;
