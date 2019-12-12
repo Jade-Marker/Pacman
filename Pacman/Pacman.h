@@ -103,6 +103,7 @@ private:
 	SoundEffect* _intro;
 	SoundEffect* _munch;
 	SoundEffect* _death;
+	SoundEffect* _gameOver;
 	const float _cMunchPitchUpperLimit;
 	const float _cMunchPitchLowerLimit;
 

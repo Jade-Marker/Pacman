@@ -53,6 +53,7 @@ _cMunchPitchUpperLimit(1.08f), _cMunchPitchLowerLimit(0.92f)
 	_intro = new SoundEffect();
 	_munch = new SoundEffect();
 	_death = new SoundEffect();
+	_gameOver = new SoundEffect();
 
 	//Initialise important Game aspects
 	Audio::Initialise();
@@ -95,6 +96,8 @@ Pacman::~Pacman()
 
 	delete _intro;
 	delete _munch;
+	delete _death;
+	delete _gameOver;
 }
 
 void Pacman::LoadContent()
@@ -154,6 +157,8 @@ void Pacman::LoadContent()
 	_intro->Load("Music & SFX/Intro.wav");
 	_munch->Load("Music & SFX/Munch.wav");
 	_death->Load("Music & SFX/Death.wav");
+	_gameOver->Load("Music & SFX/GameOver.wav");
+	_gameOver->SetLooping(true);
 }
 
 void Pacman::Update(int elapsedTime)
@@ -345,6 +350,14 @@ void Pacman::CheckStart(Input::KeyboardState* state, Input::Keys startKey)
 /// <summary> Checks if the player has pressed the key to restart </summary>
 void Pacman::CheckGameOver(Input::KeyboardState* state, Input::Keys restartKey)
 {
+	if (_gameOverMenu->inUse)
+	{
+		if (_gameOver->GetState() != SoundEffectState::PLAYING)
+		{
+			Audio::Play(_gameOver);
+		}
+	}
+
 	if (state->IsKeyDown(restartKey) && _gameOverMenu->inUse)
 	{
 		_gameOverMenu->inUse = false;
@@ -356,6 +369,7 @@ void Pacman::CheckGameOver(Input::KeyboardState* state, Input::Keys restartKey)
 		_pacman->score = 0;
 		_pacman->lives = 3;
 		_pacman->alive = true;
+		Audio::Stop(_gameOver);
 	}
 }
 
