@@ -29,6 +29,7 @@ private:
 	Ghost* _enemies[_cEnemyCount];
 
 	Player* _pacman;
+	Vector2* _levelOutputPos;
 
 	//Pacman constants
 	const float _cPacmanSpeed;
@@ -78,6 +79,7 @@ private:
 	bool _poweredUp;
 	int _powerTimer;
 
+	//Menus
 	Menu* _pauseMenu;
 	Menu* _startMenu;
 	Menu* _gameOverMenu;

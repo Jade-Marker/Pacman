@@ -72,6 +72,7 @@ Pacman::~Pacman()
 	delete _pacman->playerSprite.position;
 	delete _pacman->playerSprite.sourceRect;
 	delete _pacman->playerSprite.texture;
+	delete _levelOutputPos;
 
 	delete _pauseMenu->texture;
 	delete _pauseMenu->rect;
@@ -128,6 +129,7 @@ void Pacman::LoadContent()
 	// Set string output positions
 	_pacman->scoreOutputPos = new Vector2(10.0f, 25.0f);
 	_pacman->livesOutputPos = new Vector2(10.0f, 45.0f);
+	_levelOutputPos = new Vector2(10.0f, 65.0f);
 
 	//Set Pause Menu Parameters
 	_pauseMenu->texture = new Texture2D();
@@ -226,6 +228,7 @@ void Pacman::Draw(int elapsedTime)
 {
 	std::stringstream scoreOutput;
 	std::stringstream livesOutput;
+	std::stringstream levelOutput;
 	std::stringstream menuStream;
 
 
@@ -282,6 +285,8 @@ void Pacman::Draw(int elapsedTime)
 		livesOutput << "Lives: " << _pacman->lives;
 		SpriteBatch::DrawString(livesOutput.str().c_str(), _pacman->livesOutputPos, Color::Red);
 
+		levelOutput << "Level: " << _level;
+		SpriteBatch::DrawString(levelOutput.str().c_str(), _levelOutputPos, Color::Red);
 
 		if (_pauseMenu->inUse)
 		{

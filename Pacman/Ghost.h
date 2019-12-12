@@ -58,16 +58,16 @@ private:
 	void Scatter(int currentX, int currentY, int pacmanX, int pacmanY);
 	void Eaten(int currentX, int currentY);
 	void Frightened(int currentX, int currentY);
-	void InHouse(int currentX, int currentY);
+	void InHouse(int currentX, int currentY, int level);
 	void Move(int elapsedTime);
 	void ScreenWrapCheck();
 	bool PacmanCollision(float ghostX, float ghostY, float pacmanX, float pacmanY);
 	void Animate(int elapsedTime);
-	ghostMode GetMode(unsigned int totalElapsedTime);
+	ghostMode GetMode(unsigned int totalElapsedTime, int level);
 	void GetCurrentPosition(int& currentX, int& currentY);
 	void CheckIfAtTargetTile(int currentX, int currentY);
-	void ModeChangeTurnAroundCheck();
-	void RunModeCode(int elapsedTime, int currentX, int currentY, int pacmanX, int pacmanY, direction pacmanDirection, Ghost* blinky);
+	void ModeChangeTurnAroundCheck(int level);
+	void RunModeCode(int elapsedTime, int currentX, int currentY, int pacmanX, int pacmanY, direction pacmanDirection, Ghost* blinky, int level);
 
 public:
 	Ghost(Texture2D* texture, Vector2* position, Rect* sourceRect, mazeUnits (*mazeInput)[cMazeHeight][cMazeWidth], int ghostNumber, float leftScreenLimit, float rightScreenLimit);

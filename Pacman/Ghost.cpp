@@ -87,11 +87,11 @@ void Ghost::Update(int elapsedTime, int level, direction pacmanDirection, float 
 			else if (currMode != EATEN)
 			{
 				turnedAroundWhenFrightened = false;
-				ModeChangeTurnAroundCheck();
+				ModeChangeTurnAroundCheck(level);
 			}
 		}
 
-		RunModeCode(elapsedTime, currentX, currentY, pacmanX, pacmanY, pacmanDirection, blinky);
+		RunModeCode(elapsedTime, currentX, currentY, pacmanX, pacmanY, pacmanDirection, blinky, level);
 
 		CalculateDirection(currentX, currentY);
 		ableToLeaveHouse = false;
@@ -407,17 +407,20 @@ void Ghost::Frightened(int currentX, int currentY)
 }
 
 /// <summary> Sets the target tile for the ghost. As it is inhouse, the target tile is outside of the house so the ghost will try and leave</summary>
-void Ghost::InHouse(int currentX, int currentY)
+void Ghost::InHouse(int currentX, int currentY, int level)
 {
 	//set target tile to outside of the house, so the ghost will try and leave
 	targetX = _cHouseX;
 	targetY = _cHouseY - 3;
 
-	if (totalElapsedTime >= _cTimeToLeaveHouse * static_cast<int>(currGhost)) {
+	float levelMultiplier = static_cast<float>(level);
+	levelMultiplier = 1.0f / levelMultiplier;
+
+	if (totalElapsedTime >= _cTimeToLeaveHouse * levelMultiplier * static_cast<int>(currGhost)) {
 		ableToLeaveHouse = true;
 
 		if (currentX == targetX && currentY == targetY)
-			currMode = GetMode(totalElapsedTime);
+			currMode = GetMode(totalElapsedTime, level);
 	}
 }
 
@@ -511,25 +514,28 @@ void Ghost::Animate(int elapsedTime)
 }
 
 /// <summary> Returns the mode the ghost should be in based on the time</summary>
-ghostMode Ghost::GetMode(unsigned int totalElapsedTime)
+ghostMode Ghost::GetMode(unsigned int totalElapsedTime, int level)
 {
 	//imitates what mode the ghost should be in based on: https://gameinternals.com/understanding-pac-man-ghost-behavior
-	//Only imitates for level 1
-	//Done this way as it does not map to a linear function
+	//Imitates level 1, and then shortens the time for each level
+	//Done this way as across levels and even within a single level, it does not map to a linear function
 	
-	if (totalElapsedTime <= _cModeMediumTime)
+	float levelMultiplier = static_cast<float>(level);
+	levelMultiplier = 1.0f / levelMultiplier;
+
+	if (totalElapsedTime <= levelMultiplier * (_cModeMediumTime))
 		return SCATTER;
-	else if (totalElapsedTime <= _cModeMediumTime + _cModeLongTime)
+	else if (totalElapsedTime <= levelMultiplier * (_cModeMediumTime + _cModeLongTime))
 		return CHASE;
-	else if (totalElapsedTime <= _cModeMediumTime + _cModeLongTime + _cModeMediumTime)
+	else if (totalElapsedTime <= levelMultiplier * (_cModeMediumTime + _cModeLongTime + _cModeMediumTime))
 		return SCATTER;
-	else if (totalElapsedTime <= _cModeMediumTime + _cModeLongTime + _cModeMediumTime + _cModeLongTime)
+	else if (totalElapsedTime <= levelMultiplier * (_cModeMediumTime + _cModeLongTime + _cModeMediumTime + _cModeLongTime))
 		return CHASE;
-	else if (totalElapsedTime <= _cModeMediumTime + _cModeLongTime + _cModeMediumTime + _cModeLongTime + _cModeShortTime)
+	else if (totalElapsedTime <= levelMultiplier * (_cModeMediumTime + _cModeLongTime + _cModeMediumTime + _cModeLongTime + _cModeShortTime))
 		return SCATTER;
-	else if (totalElapsedTime <= _cModeMediumTime + _cModeLongTime + _cModeMediumTime + _cModeLongTime + _cModeShortTime + _cModeLongTime)
+	else if (totalElapsedTime <= levelMultiplier * (_cModeMediumTime + _cModeLongTime + _cModeMediumTime + _cModeLongTime + _cModeShortTime + _cModeLongTime))
 		return CHASE;
-	else if (totalElapsedTime <= _cModeMediumTime + _cModeLongTime + _cModeMediumTime + _cModeLongTime + _cModeShortTime + _cModeLongTime + _cModeShortTime)
+	else if (totalElapsedTime <= levelMultiplier * (_cModeMediumTime + _cModeLongTime + _cModeMediumTime + _cModeLongTime + _cModeShortTime + _cModeLongTime + _cModeShortTime))
 		return SCATTER;
 	else
 		return CHASE;
@@ -623,10 +629,10 @@ void Ghost::CheckIfAtTargetTile(int currentX, int currentY)
 }
 
 /// <summary> Checks if there has been a mode change and turns around if there has</summary>
-void Ghost::ModeChangeTurnAroundCheck()
+void Ghost::ModeChangeTurnAroundCheck(int level)
 {
 	ghostMode oldMode = currMode;
-	currMode = GetMode(totalElapsedTime);
+	currMode = GetMode(totalElapsedTime, level);
 
 	//if there has been a mode change, turn around
 	if (oldMode != currMode && enemySprite->direction != NONE)
@@ -636,7 +642,7 @@ void Ghost::ModeChangeTurnAroundCheck()
 }
 
 /// <summary> Runs the function for the current mode</summary>
-void Ghost::RunModeCode(int elapsedTime, int currentX, int currentY, int pacmanX, int pacmanY, direction pacmanDirection, Ghost* blinky)
+void Ghost::RunModeCode(int elapsedTime, int currentX, int currentY, int pacmanX, int pacmanY, direction pacmanDirection, Ghost* blinky, int level)
 {
 	switch (currMode)
 	{
@@ -662,7 +668,7 @@ void Ghost::RunModeCode(int elapsedTime, int currentX, int currentY, int pacmanX
 
 	case INHOUSE:
 		totalElapsedTime += elapsedTime;
-		InHouse(currentX, currentY);
+		InHouse(currentX, currentY, level);
 		break;
 	}
 }
