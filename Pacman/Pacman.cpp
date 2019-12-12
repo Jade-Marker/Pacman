@@ -52,6 +52,7 @@ _cMunchPitchUpperLimit(1.08f), _cMunchPitchLowerLimit(0.92f)
 
 	_intro = new SoundEffect();
 	_munch = new SoundEffect();
+	_ghostMunch = new SoundEffect();
 	_death = new SoundEffect();
 	_gameOver = new SoundEffect();
 
@@ -96,6 +97,7 @@ Pacman::~Pacman()
 
 	delete _intro;
 	delete _munch;
+	delete _ghostMunch;
 	delete _death;
 	delete _gameOver;
 }
@@ -156,6 +158,7 @@ void Pacman::LoadContent()
 	//Load music/SFX
 	_intro->Load("Music & SFX/Intro.wav");
 	_munch->Load("Music & SFX/Munch.wav");
+	_ghostMunch->Load("Music & SFX/Ghost Munch.wav");
 	_death->Load("Music & SFX/Death.wav");
 	_gameOver->Load("Music & SFX/GameOver.wav");
 	_gameOver->SetLooping(true);
@@ -650,8 +653,8 @@ void Pacman::UpdateGhostAndCheckCollisions(int elapsedTime)
 			{
 				_enemies[i]->GhostHasBeenEaten();
 				_pacman->score += _cEnemyValue;
-				if (_munch->GetState() != SoundEffectState::PLAYING)
-					Audio::Play(_munch);
+				if (_ghostMunch->GetState() != SoundEffectState::PLAYING)
+					Audio::Play(_ghostMunch);
 			}
 			else if (ghostMode != EATEN)
 			{
