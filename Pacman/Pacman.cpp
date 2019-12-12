@@ -52,6 +52,7 @@ _cMunchPitchUpperLimit(1.08f), _cMunchPitchLowerLimit(0.92f)
 
 	_intro = new SoundEffect();
 	_munch = new SoundEffect();
+	_death = new SoundEffect();
 
 	//Initialise important Game aspects
 	Audio::Initialise();
@@ -152,6 +153,7 @@ void Pacman::LoadContent()
 	//Load music/SFX
 	_intro->Load("Music & SFX/Intro.wav");
 	_munch->Load("Music & SFX/Munch.wav");
+	_death->Load("Music & SFX/Death.wav");
 }
 
 void Pacman::Update(int elapsedTime)
@@ -171,10 +173,16 @@ void Pacman::Update(int elapsedTime)
 				if (!_delay) {
 					if (!_pacman->alive)
 					{
-						ResetLevel();
-						_delay = true;
-						_delayInMilli = _cLevelStartDelay;
-						_pacman->alive = true;
+						if (_pacman->lives <= 0)
+							_gameOverMenu->inUse = true;
+						else
+						{
+							ResetLevel();
+							_delay = true;
+							_delayInMilli = _cLevelStartDelay;
+							_pacman->alive = true;
+						}
+						
 					}
 					else {
 						Input(elapsedTime, keyboardState);
@@ -605,11 +613,12 @@ void Pacman::PacmanDeath()
 	_pacman->alive = false;
 
 	_pacman->lives--;
-	if (_pacman->lives <= 0)
-		_gameOverMenu->inUse = true;
+
 
 	_delay = true;
 	_delayInMilli = _cDeathDelay;
+
+	Audio::Play(_death);
 }
 
 /// <summary> Updates the ghosts and checks for collisions with ghosts </summary>
