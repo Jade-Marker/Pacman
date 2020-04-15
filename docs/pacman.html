@@ -1,0 +1,164 @@
+﻿<!DOCTYPE HTML>
+<!--
+	Stellar by HTML5 UP
+	html5up.net | @ajlkn
+	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+-->
+<html>
+	<head>
+        <title>Pacman</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+		<link rel="stylesheet" href="assets/css/main.css" />
+		<noscript><link rel="stylesheet" href="assets/css/noscript.css" /></noscript>
+	</head>
+	<body class="is-preload">
+
+		<!-- Wrapper -->
+			<div id="wrapper">
+
+				<!-- Header -->
+					<header id="header">
+                        <h1>Pacman</h1>
+					</header>
+
+				<!-- Main -->
+					<div id="main">
+
+						<!-- Content -->
+                        <section id="content" class="main">
+                            <span class="image main"><img src="images/pacman-full-screenshot.PNG" alt="" /></span>
+                            <h2>What is it?</h2>
+                            <p>This project is a recreation of Pacman using the S2D library which was created by Staffordshire University.</p>
+
+                            <h2>Who did what?</h2>
+                            <p>We were provided with an initial framework to use. During tutorials, we were also given some code snippets.
+                            Additionally, during early development I used some graphics provided by the university and graphics from the original Pacman.
+                            Other than those all programming, art and music was done by myself.</p>
+
+                            <h2>When was it worked on?</h2>
+                            <p>Work started on the project around September of 2019 and finished on the 13th of December of 2019</p>
+
+                            <h2>What are the controls?</h2>
+                            <p>WASD to move pacman. Space to start the game, P to pause the game and R to restart on gameover.</p>
+							
+							<h2>What went right/wrong during development?</h2>
+                            <p>
+								I think that the thing that I'm most proud of from this project was the AI. During development, I wanted to make the AI of the ghosts as accurate to the original as possible. 
+								Although I did have to concede with some aspects of the AI (timings for ghosts to leave the ghost house, etc), I think that the differences in the AI wouldn't be noticable to a 
+								majority of players.
+                                <br />
+                                I think that during this project, I spent too much time on the AI. While I am proud of the AI and am happy with how it turned out, 
+								I think that other parts of the program suffered because of it. E.g. there is only music on the death screen due to not having time to write any more.
+								Additionally, there is a slight problem in that the player sprite is able to overlap slightly with the maze. 
+								I intended to fix this, however towards the end of development I felt that there were other more important problems to fix.
+                            </p>
+							
+                            <h2>Where can I play the game/access the source code?</h2>
+                            <p>
+							Both the game and the source code can be found on my github account. Alternatively, you can click
+                                <a href="https://github.com/Daniel-Marker/Pacman"target="_blank">here</a> to go straight to the github page.
+                            </p>
+							
+							  <h2>Screenshots</h2>
+                            <span id="screenshots" style="display: flex; justify-content: center;">
+                                <!--default image-->
+                                <img id ="img"src="images/pacman-screenshot-01.PNG" style="max-height: 100vh; max-width: 100%; margin: auto"/>
+                            </span>
+
+                            <script>
+                                var images = ["images/pacman-screenshot-01.PNG", "images/pacman-screenshot-02.PNG", "images/pacman-screenshot-03.PNG"];
+                                
+                                var index = 0;
+
+                                function output(){                                    
+                                    index++;
+                                    if(index > images.length-1)
+                                    {
+                                        index = 0;
+                                    }
+                                    
+                                    document.getElementById("img").src = images[index];
+                                    fadeIn(document.getElementById("img"));
+                                }
+
+                                //taken from https://stackoverflow.com/questions/33505032/fade-in-image-javascript
+                                function fadeIn(el) {
+                                    el.style.opacity = 0;
+                                    var tick = function () {
+                                        el.style.opacity = +el.style.opacity + 0.01;
+                                        if (+el.style.opacity < 1) {
+                                            (window.requestAnimationFrame && requestAnimationFrame(tick)) || setTimeout(tick, 16)
+                                        }
+                                    };
+                                tick();
+                                }
+
+                                function nextPicture()
+                                {
+                                    index++;
+                                    if(index > images.length-1)
+                                    {
+                                        index = 0;
+                                    }
+                                    document.getElementById("img").src = images[index];
+                                    fadeIn(document.getElementById("img"));
+                                    clearInterval();
+                                }
+
+                                function previousPicture()
+                                {
+                                    index--;
+                                    if(index < 0)
+                                    {
+                                        index = images.length-1;
+                                    }
+                                    document.getElementById("img").src = images[index];
+                                    fadeIn(document.getElementById("img"));
+                                    clearInterval();
+                                }
+
+                                window.setInterval(output, 10000);
+                            </script>
+                            <br/>
+
+                            <div style="text-align: center;">
+                                <button type="button" onclick="previousPicture()">Previous</button> &emsp;&emsp;&emsp;
+                                <button type="button" onclick="nextPicture()">Next</button>
+                            </div>
+                        </section>
+
+					</div>
+
+				<!-- Footer -->
+                    <footer id="footer">
+                <section>
+                    <h2>Social media</h2>
+                    <ul class="icons">
+                        <li><a href="https://www.linkedin.com/in/daniel-marker-311412195/" target="_blank" class="icon brands fa-linkedin alt"><span class="label">LinkedIn</span></a></li>
+                        <li><a href="https://twitter.com/DanielMarker15" target="_blank" class="icon brands fa-twitter alt"><span class="label">Twitter</span></a></li>
+                        <li><a href="https://github.com/Daniel-Marker" target="_blank" class="icon brands fa-github alt"><span class="label">GitHub</span></a></li>
+                    </ul>
+                </section>
+                <!--<p class="copyright">&copy; Untitled. Design: <a href="https://html5up.net">HTML5 UP</a>.</p>-->
+                <p class="copyright" style="text-align: center;">&copy; Daniel Marker <span id="year"></span>. Design: <a href="https://html5up.net">HTML5 UP</a>.</p>
+            </footer>
+
+            <script>
+                var year = new Date();
+                document.getElementById("year").innerHTML = year.getFullYear();
+            </script>
+
+			</div>
+
+		<!-- Scripts -->
+			<script src="assets/js/jquery.min.js"></script>
+			<script src="assets/js/jquery.scrollex.min.js"></script>
+			<script src="assets/js/jquery.scrolly.min.js"></script>
+			<script src="assets/js/browser.min.js"></script>
+			<script src="assets/js/breakpoints.min.js"></script>
+			<script src="assets/js/util.js"></script>
+			<script src="assets/js/main.js"></script>
+
+	</body>
+</html>
